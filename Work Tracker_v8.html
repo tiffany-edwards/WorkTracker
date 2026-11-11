@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Work Tracker</title>
+<style>
+:root{--pur:#7b4fd6;--teal:#12857f;--bg:#f6f6f3;--card:#fff;--fg:#1d1d1b;--mut:#6b6b66;--bd:#e2e2dc;--acc:#2f6fed;--ok:#1f8a4c;--warn:#c27a00;--bad:#c93a3a;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--pur:#a98bff;--teal:#3cc2b9;--bg:#171716;--card:#222221;--fg:#ecece8;--mut:#9a9a94;--bd:#363634;--acc:#6e9bff;--ok:#4cc27d;--warn:#e5a53a;--bad:#ef6b6b;color-scheme:dark}}
+:root[data-theme="dark"]{--pur:#a98bff;--teal:#3cc2b9;--bg:#171716;--card:#222221;--fg:#ecece8;--mut:#9a9a94;--bd:#363634;--acc:#6e9bff;--ok:#4cc27d;--warn:#e5a53a;--bad:#ef6b6b;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
+.wrap{max-width:860px;margin:0 auto;padding:16px}
+h1{font-size:20px;margin:0}
+.top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px}
+nav{display:flex;gap:4px;overflow-x:auto;border-bottom:1px solid var(--bd);margin-bottom:14px}
+nav button{background:none;border:0;color:var(--mut);padding:8px 12px;font:inherit;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap}
+nav button.on{color:var(--fg);border-color:var(--acc);font-weight:600}
+button,input,select,textarea{font:inherit;color:var(--fg)}
+.btn{background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:6px 12px;cursor:pointer}
+.btn.p{background:var(--acc);border-color:var(--acc);color:#fff}
+.btn.d{color:var(--bad)}
+.bar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.bar input[type=search]{flex:1;min-width:140px}
+input,select,textarea{background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:6px 10px;width:100%}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;margin-bottom:8px;overflow:hidden}
+.head{display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:pointer;flex-wrap:wrap}
+.head .t{flex:1;min-width:140px;font-weight:600}
+.ref{color:var(--acc);font-weight:700;margin-right:6px}
+.pill{font-size:12px;padding:2px 8px;border-radius:99px;border:1px solid var(--bd);color:var(--mut);white-space:nowrap}
+.pill.hi{color:var(--bad);border-color:var(--bad)}.pill.Done{color:var(--ok);border-color:var(--ok)}.pill.Blocked{color:var(--bad);border-color:var(--bad)}.pill.od{color:var(--bad);border-color:var(--bad)}
+.prog{width:70px;height:6px;background:var(--bd);border-radius:9px;overflow:hidden}.prog i{display:block;height:100%;background:var(--acc)}
+.pill.Open,.pill.Scheduled{color:var(--acc);border-color:var(--acc)}
+.pill.progress,.pill.Doing{color:var(--warn);border-color:var(--warn)}
+.pill.do,.pill.Cancelled{color:var(--mut)}
+.pill.Cancelled{text-decoration:line-through}
+.pill.Open,.pill.Scheduled,.pill.progress,.pill.Doing,.pill.do,.pill.Cancelled,.pill.Done,.pill.Blocked,.pill.hi,.pill.od{background:color-mix(in srgb,currentColor 13%,transparent);font-weight:600}
+.mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;white-space:pre;overflow:auto}
+.outl{background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:8px 10px;margin-top:2px}
+.ol{display:flex;gap:6px;padding:1px 0}.bl{color:var(--mut)}
+.pill.c-gray{color:var(--mut)}.pill.c-blue{color:var(--acc);border-color:var(--acc)}.pill.c-amber{color:var(--warn);border-color:var(--warn)}.pill.c-red{color:var(--bad);border-color:var(--bad)}.pill.c-green{color:var(--ok);border-color:var(--ok)}.pill.c-purple{color:var(--pur);border-color:var(--pur)}.pill.c-teal{color:var(--teal);border-color:var(--teal)}
+.pill.c-gray,.pill.c-blue,.pill.c-amber,.pill.c-red,.pill.c-green,.pill.c-purple,.pill.c-teal{background:color-mix(in srgb,currentColor 13%,transparent);font-weight:600}
+.hl{outline:2px solid var(--acc)}
+.mini[data-act="goto"]:hover{background:color-mix(in srgb,var(--acc) 8%,transparent)}
+.pill.pb0{color:var(--mut)}.pill.pb1{color:var(--warn);border-color:var(--warn)}.pill.pb2{color:var(--ok);border-color:var(--ok)}.pill.pb3{color:var(--acc);border-color:var(--acc)}.pill.pb4{color:var(--bad);border-color:var(--bad)}
+.pill.pb0,.pill.pb1,.pill.pb2,.pill.pb3,.pill.pb4{background:color-mix(in srgb,currentColor 13%,transparent);font-weight:600;cursor:pointer}
+.pill.tg{color:var(--acc);border-color:var(--acc);cursor:pointer}
+.body{padding:4px 12px 12px;border-top:1px solid var(--bd)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:10px 0}
+label{font-size:12px;color:var(--mut);display:block;margin-bottom:2px}
+.note{border-left:3px solid var(--bd);padding:2px 10px;margin:6px 0;display:flex;gap:8px;justify-content:space-between}
+.note small{color:var(--mut);display:block}.note span{white-space:pre-wrap}
+.note button{background:none;border:0;color:var(--mut);cursor:pointer}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:16px}
+.stat{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:10px 12px}.stat b{font-size:24px;display:block}.stat span{color:var(--mut);font-size:13px}
+h2{font-size:15px;margin:18px 0 8px}
+.empty{color:var(--mut);padding:8px 2px}
+.mini{display:flex;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--bd);cursor:pointer}
+.mini .t{flex:1}
+textarea{min-height:60px;resize:vertical}
+
+/* ===================== v7 visual refresh ===================== */
+:root{--r:14px;--sh:0 1px 2px rgba(20,20,25,.05),0 10px 26px -18px rgba(20,20,25,.35);--sh2:0 2px 6px rgba(20,20,25,.08),0 18px 40px -22px rgba(20,20,25,.45);--side:#fbfbf9}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--sh:0 1px 2px rgba(0,0,0,.4);--sh2:0 2px 10px rgba(0,0,0,.5);--side:#1b1b1a}}
+:root[data-theme="dark"]{--sh:0 1px 2px rgba(0,0,0,.4);--sh2:0 2px 10px rgba(0,0,0,.5);--side:#1b1b1a}
+body{font:15px/1.5 "Inter",system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+.app{max-width:1200px;margin:0 auto}
+.side{padding:14px 14px 8px}
+.brand{display:flex;align-items:center;gap:9px;font-weight:700;letter-spacing:-.01em;margin-bottom:12px}
+.brand .mark{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;color:#fff;font-size:12px;font-weight:800;background:linear-gradient(135deg,var(--acc),var(--pur));box-shadow:0 4px 12px -4px color-mix(in srgb,var(--acc) 70%,transparent)}
+.sideft{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+.btn.w{width:100%;text-align:left}
+.main{padding:14px 16px 28px;min-width:0}
+.top{margin-bottom:14px}
+.top h1{font-size:22px;letter-spacing:-.02em}
+.sub{color:var(--mut);font-size:12.5px;margin-top:2px}
+nav{gap:2px;margin-bottom:16px}
+nav button{border-radius:9px;padding:8px 12px;transition:background .12s,color .12s}
+nav button:hover{color:var(--fg);background:color-mix(in srgb,var(--fg) 6%,transparent)}
+@media (min-width:1000px){
+ .app{display:grid;grid-template-columns:234px minmax(0,1fr);align-items:start}
+ .side{position:sticky;top:0;align-self:start;min-height:100vh;background:var(--side);border-right:1px solid var(--bd);display:flex;flex-direction:column}
+ .side nav{flex-direction:column;border-bottom:0;overflow:visible;margin-bottom:0;flex:1}
+ .side nav button{width:100%;text-align:left;border-bottom:0;font-weight:500}
+ .side nav button.on{background:color-mix(in srgb,var(--acc) 15%,transparent);color:var(--acc);border-color:transparent}
+ .main{padding:22px 26px 40px}
+}
+@media (max-width:999px){.side{display:flex;flex-direction:column;border-bottom:1px solid var(--bd)}.side .sideft{flex-direction:row;flex-wrap:wrap}.btn.w{width:auto}.side nav{order:3}}
+.btn{border-radius:9px;transition:border-color .12s,background .12s,transform .08s;font-weight:500}
+.btn:hover{border-color:var(--acc)}
+.btn:active{transform:translateY(1px)}
+.btn.p{box-shadow:0 4px 14px -6px color-mix(in srgb,var(--acc) 80%,transparent)}
+.btn.p:hover{filter:brightness(1.06)}
+input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid color-mix(in srgb,var(--acc) 50%,transparent);outline-offset:1px;border-color:var(--acc)}
+.card{border-radius:var(--r);box-shadow:var(--sh);border-left:3px solid transparent;transition:box-shadow .14s,border-color .14s,transform .1s}
+.card:hover{box-shadow:var(--sh2)}
+.card.op{box-shadow:var(--sh2)}
+.card.ac-blue{border-left-color:var(--acc)}.card.ac-amber{border-left-color:var(--warn)}.card.ac-red{border-left-color:var(--bad)}.card.ac-green{border-left-color:var(--ok)}.card.ac-purple{border-left-color:var(--pur)}.card.ac-teal{border-left-color:var(--teal)}.card.ac-gray{border-left-color:var(--bd)}
+.head{padding:11px 14px}
+.head .t{letter-spacing:-.01em}
+.body{padding:6px 14px 14px}
+h2{font-size:11.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--mut);margin:22px 0 8px;display:flex;align-items:center;gap:8px}
+h2 .n{background:color-mix(in srgb,var(--fg) 8%,transparent);color:var(--mut);border-radius:99px;padding:1px 7px;font-size:11px;letter-spacing:0}
+.stats{grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:6px}
+.stat{border-radius:var(--r);padding:14px 14px 12px;background:linear-gradient(140deg,color-mix(in srgb,var(--tc) 20%,var(--card)) 0%,var(--card) 70%);border-color:color-mix(in srgb,var(--tc) 32%,var(--bd));box-shadow:var(--sh)}
+.stat b{font-size:28px;letter-spacing:-.03em;line-height:1.1}
+.stat.lnk b{color:var(--tc)}
+.stat:hover{border-color:var(--tc);box-shadow:var(--sh2)}
+.stat span{font-size:12.5px}
+.mini{padding:8px 2px;border-radius:8px;transition:background .12s}
+.mini:hover{background:color-mix(in srgb,var(--fg) 4%,transparent)}
+.pill{font-size:11.5px;padding:2.5px 9px;line-height:1.5}
+.pill.cam{color:var(--cc);border-color:color-mix(in srgb,var(--cc) 45%,var(--bd));background:color-mix(in srgb,var(--cc) 15%,transparent);font-weight:700;letter-spacing:.02em}
+.camwrap{display:flex;gap:6px;flex-wrap:wrap;padding-top:2px}
+.camchip{font:inherit;font-size:12.5px;font-weight:600;padding:5px 11px;border-radius:99px;cursor:pointer;background:var(--bg);border:1px solid var(--bd);color:var(--mut);transition:all .12s;width:auto}
+.camchip:hover{border-color:var(--cc);color:var(--cc)}
+.camchip.on{color:var(--cc);border-color:color-mix(in srgb,var(--cc) 60%,transparent);background:color-mix(in srgb,var(--cc) 16%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--cc) 30%,transparent)}
+.ref{letter-spacing:.01em}
+.sec{border-radius:var(--r);box-shadow:var(--sh);padding:14px 16px}
+.sec h3{font-size:14.5px;letter-spacing:-.01em;margin-bottom:6px}
+.fbar{padding:8px 10px;background:var(--card);border:1px solid var(--bd);border-radius:11px;box-shadow:var(--sh);margin:0 0 12px}
+.fbar select,.fbar input{padding:4px 8px;border-radius:8px;font-size:13.5px}
+.bar{align-items:center}
+.pv{border-radius:10px}
+.tb button{border-radius:7px}
+.banner{border-radius:12px;box-shadow:var(--sh);border-left:3px solid var(--acc)}
+.note{border-left-width:3px;border-radius:0 8px 8px 0;background:color-mix(in srgb,var(--fg) 3%,transparent);padding:6px 10px}
+::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-thumb{background:color-mix(in srgb,var(--fg) 18%,transparent);border-radius:8px;border:3px solid var(--bg)}
+/* ===================== v8: lock screen + card sections ===================== */
+.lock{display:none;position:fixed;inset:0;z-index:9999;background:color-mix(in srgb,var(--bg) 90%,#000);align-items:center;justify-content:center;padding:20px}
+.lock.on{display:flex}
+.lockbox{background:var(--card);border:1px solid var(--bd);border-radius:16px;box-shadow:var(--sh2);padding:22px;width:min(340px,100%)}
+.lockbox .btn{text-align:center}
+.lockerr{display:none;color:var(--bad);font-size:12.5px;margin-top:8px}
+.lockerr.on{display:block}
+.jmp{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 12px;position:sticky;top:0;background:var(--card);padding:6px 0;z-index:4}
+.jmp button{font:inherit;font-size:11.5px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;padding:4px 11px;border-radius:99px;border:1px solid var(--bd);background:var(--bg);color:var(--mut);cursor:pointer;transition:all .12s}
+.jmp button:hover{color:var(--acc);border-color:var(--acc)}
+.cs{border:1px solid var(--bd);border-radius:11px;margin-bottom:10px;background:color-mix(in srgb,var(--fg) 2%,transparent);overflow:hidden;scroll-margin-top:52px}
+.csh{display:flex;align-items:center;gap:8px;padding:9px 12px;cursor:pointer;user-select:none;border-bottom:1px solid transparent}
+.cs.op .csh{border-bottom-color:var(--bd);background:color-mix(in srgb,var(--fg) 3%,transparent)}
+.cst{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);font-weight:700;flex:1}
+.csn{background:color-mix(in srgb,var(--fg) 10%,transparent);color:var(--mut);border-radius:99px;padding:1px 7px;font-size:11px;font-weight:600}
+.csx{color:var(--mut);font-size:11px}
+.csb{padding:6px 12px 12px;background:var(--card)}
+.csb .grid{margin-top:6px}
+</style></head>
+<body>
+<div id="lock" class="lock">
+<div class="lockbox">
+<div class="brand" style="justify-content:center;margin-bottom:14px"><span class="mark">WT</span><span>Work Tracker</span></div>
+<label for="pw">Password</label>
+<input type="password" id="pw" autocomplete="current-password" placeholder="Enter password">
+<button class="btn p w" id="pwgo" style="margin-top:10px">Unlock</button>
+<div id="pwerr" class="lockerr">That password didn&rsquo;t match. Try again.</div>
+</div>
+</div>
+<div class="app">
+<aside class="side">
+<div class="brand"><span class="mark">WT</span><span>Work Tracker</span></div>
+<nav id="nav"></nav>
+<div class="sideft"><button class="btn p w" data-act="dlapp" title="Download this whole app, with your data inside it">&#11015; Download app (.html)</button><button class="btn w" id="th">&#9680; Theme: Auto</button><button class="btn d w" id="rs">Reset data</button></div>
+</aside>
+<main class="main">
+<div class="top"><h1 id="ttl">Tickets</h1><div class="sub" id="sub">Your TeamDynamix work.</div></div>
+<div id="imp" hidden class="card" style="padding:12px;margin-bottom:12px"><b id="impt">Import tickets</b><div id="imph" style="color:var(--mut);font-size:13px;margin:4px 0 8px">Choose a CSV file, or paste rows with a header line.</div><input type="file" id="imf" accept=".csv,.tsv,.txt,text/csv"><textarea id="imt" placeholder="...or paste rows here" style="margin-top:8px"></textarea><div style="margin-top:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap"><button class="btn p" id="imy">Import</button><button class="btn" id="imn">Close</button><span id="imm" style="color:var(--mut)"></span></div></div>
+<div id="rsp" hidden class="card" style="padding:12px;margin-bottom:12px"><b>Delete all tickets, tasks, and meetings?</b> Your playbook is not affected. This can&rsquo;t be undone, so download a copy of the app first if you want one.<div style="margin-top:8px;display:flex;gap:8px"><button class="btn d" id="rsy">Yes, delete everything</button><button class="btn" id="rsn">Cancel</button></div></div>
+<div id="bkn" class="card banner" style="padding:10px 14px;margin-bottom:12px" hidden><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span id="bkm" style="flex:1;min-width:160px">You haven&rsquo;t downloaded a copy of the app yet. Save one now?</span><button class="btn p" id="bkd">Download app (.html)</button><button class="btn" id="bkx">Not now</button></div></div>
+<div id="main"></div>
+<p class="empty" style="margin-top:28px;font-size:12.5px">Saved in this browser only. Download the app now and then to keep a copy of your data.</p>
+</main>
+</div>
+<script id="seed" type="application/json">{"tickets":[{"id":"n4tqo39","ref":"22921276","title":"Clarification on Reporting Discrepancy for SPN110816/UC7 - Report Update","status":"Open","priority":"Medium","due":"","tags":[],"notes":[],"created":"2025-07-23","assigned":"2026-11-10","upd":"2026-11-11 10:10","doneAt":"","camps":[]},{"id":"dmz65wu","ref":"23653343","title":"Account Status Change from Cancelled to active (expired)","status":"Open","priority":"Medium","due":"","tags":[],"notes":[],"created":"2026-01-30","assigned":"2026-11-10","camps":[]},{"id":"7v0imjn","ref":"23813487","title":"DASH Sponsored Projects Detail Report - data in .csv vs .xlsx files don't match - Report Update","status":"Open","priority":"Medium","due":"","tags":[],"notes":[],"created":"2026-03-16","assigned":"2026-11-10","camps":[]},{"id":"w5hoynv","ref":"24067142","title":"Closed Contract Line & Residual Transfer","status":"Open","priority":"Medium","due":"","tags":[],"notes":[{"t":"2026-11-10 17:04","x":"11/10 - it shows awaiting response?"}],"link":"https://utk.teamdynamix.com/TDNext/Apps/2278/Tickets/TicketDet?TicketID=24067142","created":"2026-05-21","assigned":"2026-11-10","camps":[]},{"id":"4cx1tes","ref":"24356180","title":"Summary Report is incorrect","status":"Done","priority":"Medium","due":"","tags":[],"notes":[{"t":"2026-11-10 17:10","x":"11/9/26 1:44 PM - Bryan assigned to me and asked that I look at it"},{"t":"2026-11-10 17:12","x":"11/9 4:26 - I shared that I thought the baseline budget and current working budget did not match\nthe SP Financial Summary Report was pulling from the baseline budget"},{"t":"2026-11-10 17:12","x":"11/9 - 4:53 Janet updated the baseline budget and the report ran correctly for me"},{"t":"2026-11-10 17:13","x":"11/10 9:15 - per Kimberly it was corrected"}],"link":"https://utk.teamdynamix.com/TDNext/Apps/2278/Tickets/TicketDet?TicketID=24356180","created":"2026-08-12","assigned":"2026-11-09","pb":[{"id":"3ll2jhm","st":"To try"}],"camps":[]},{"id":"ch4krnt","ref":"24488696","title":"burden cost","status":"Open","priority":"Medium","due":"","tags":[],"notes":[{"t":"2026-11-11 08:42","x":"11/9/26 - sent playbook entry above with a full explanation of how idc work"}],"created":"2026-09-02","assigned":"2026-11-09","pb":[{"id":"xajlggy","st":"To try"}],"camps":[]},{"id":"fpx5g0o","ref":"24498275","title":"Terminated employee's history","status":"Open","priority":"Medium","due":"","tags":[],"notes":[{"t":"2026-11-10 16:46","x":"11/9/26 Requested more information"}],"created":"2026-09-03","assigned":"2026-11-09","link":"https://utk.teamdynamix.com/TDNext/Apps/2278/Tickets/TicketDet?TicketID=24498275","camps":[]},{"id":"i9vrytx","ref":"24673688","title":"Business Manager Update","status":"Blocked","priority":"Medium","due":"","tags":[],"notes":[{"t":"2026-11-10 16:47","x":"11/9/26 - working through APIWizard\nsent ticket for APIWizard issue with the popup"}],"created":"2026-10-19","assigned":"2026-10-19","link":"https://utk.teamdynamix.com/TDNext/Apps/2278/Tickets/TicketDet?TicketID=24673688","camps":["UTK"],"upd":"2026-11-11 10:29","doneAt":""},{"id":"yj220nb","ref":"24695660","title":"Portal Title added into DASH Award","status":"In progress","priority":"Medium","due":"","tags":[],"notes":[{"t":"2026-11-10 17:00","x":"waiting for Rachel to review in Test env 11/5/26"}],"link":"https://utk.teamdynamix.com/TDNext/Apps/2278/Tickets/TicketDet?TicketID=24695660","assigned":"2026-10-27","created":"2026-10-26","camps":[]},{"id":"zhs6fye","ref":"24497524","title":"Cost Share Error","status":"Open","priority":"Medium","due":"","tags":[],"notes":[],"link":"https://utk.teamdynamix.com/TDNext/Apps/2278/Tickets/TicketDet?TicketID=24497524","assigned":"2026-11-05","created":"2026-09-03","camps":[]},{"id":"1ynkjx7","ref":"23485548","title":"Expenses not Posting to SPN113156","status":"Open","priority":"Medium","due":"","tags":[],"notes":[],"created":"2025-12-12","assigned":"2026-11-10","camps":[]},{"id":"oe3cl43","ref":"23300386","title":"Negative Salaries","status":"Open","priority":"Medium","due":"","tags":[],"notes":[],"created":"2025-10-17","assigned":"2026-11-10","camps":[]},{"id":"0k3hopn","ref":"23294434","title":"Aging/Cost transfer balance","status":"Open","priority":"Medium","due":"","tags":[],"notes":[],"created":"2026-10-16","assigned":"2026-11-10","camps":[]},{"id":"3r28454","ref":"23291179","title":"Issue with New SPN","status":"Open","priority":"Medium","due":"","tags":[],"notes":[],"created":"2025-10-15","assigned":"2026-11-10","camps":[]},{"id":"n0mutd3","ref":"23767586","title":"To change the status of DASH Award No. 2100367 from Canceled to Expired","status":"Open","priority":"Medium","due":"","tags":[],"notes":[{"t":"2026-11-11 08:48","x":"same as the one Bonnie submitted"}],"assigned":"2026-11-10","created":"2026-03-02","camps":[]},{"id":"uxe3k4p","ref":"23998254","title":"SPN110342 - Budget Not Updating","status":"Open","priority":"Medium","due":"","tags":[],"notes":[],"created":"2026-05-05","assigned":"2026-11-10","camps":[]},{"id":"34c93te","ref":"24084320","title":"Bill plan change","status":"In progress","priority":"Medium","due":"","tags":[],"notes":[{"t":"2026-11-10 17:05","x":"Casey Dixon"},{"t":"2026-11-10 17:06","x":"She should be able to make the change to cost reimbursable ... need to find out who set it up","task":"iz3u3ym"}],"link":"https://utk.teamdynamix.com/TDNext/Apps/2278/Tickets/TicketDet?TicketID=24084320","created":"2026-05-27","assigned":"2026-11-10","camps":[]},{"id":"rhq07vi","ref":"24251912","title":"Sponsored Project Detail Report in DASH","status":"Open","priority":"Medium","due":"","tags":[],"notes":[],"assigned":"2026-11-10","created":"2026-07-17","link":"https://utk.teamdynamix.com/TDNext/Apps/2278/Tickets/TicketDet?TicketID=24251912","camps":[]},{"id":"569lhrz","ref":"24291877","title":"Indirect Cost Foregone Report","status":"Open","priority":"Medium","due":"","tags":[],"notes":[],"created":"2026-07-28","assigned":"2026-11-10","link":"https://utk.teamdynamix.com/TDNext/Apps/2278/Tickets/TicketDet?TicketID=24291877","camps":[]},{"id":"y3n8z2v","ref":"24330937","title":"Invoice Issue","status":"Open","priority":"Medium","due":"","tags":[],"notes":[],"link":"https://utk.teamdynamix.com/TDNext/Apps/2278/Tickets/TicketDet?TicketID=24330937","created":"2026-08-06","assigned":"2026-11-10","camps":[]},{"id":"tcloxv4","ref":"24683180","title":"Invoicing eror","status":"In progress","priority":"Medium","due":"","tags":[],"notes":[{"t":"2026-11-10 16:45","x":"11/9/26 sent Cynthia message that I will be looking into this one"}],"created":"2026-10-21","link":"https://utk.teamdynamix.com/TDNext/Apps/2278/Tickets/TicketDet?TicketID=24683180","assigned":"2026-11-06","camps":[]},{"id":"jjx5wmd","ref":"23908318","title":"BlueCare-BlueCross/Sheild TN- Hoffman FY26 - Billing Issues","status":"Open","priority":"Medium","due":"","tags":[],"notes":[],"link":"https://utk.teamdynamix.com/TDNext/Apps/2278/Tickets/TicketDet?TicketID=23908318","created":"2026-04-10","assigned":"2026-11-10","camps":[]},{"id":"cr4yfhy","ref":"24331039","title":"Invoice not generating in DASH","status":"Open","priority":"Medium","due":"","tags":[],"notes":[],"link":"https://utk.teamdynamix.com/TDNext/Apps/2278/Tickets/TicketDet?TicketID=24331039","created":"2026-08-06","assigned":"2026-11-10","camps":[]},{"id":"p6jemr9","ref":"24632641","title":"Unable to create baseline for project SPN103852","status":"Open","priority":"Medium","due":"","tags":[],"notes":[],"link":"https://utk.teamdynamix.com/TDNext/Apps/2278/Tickets/TicketDet?TicketID=24632641","created":"2026-10-07","assigned":"2026-11-10","camps":[]},{"id":"tp74fyt","ref":"24525562","title":"Error","status":"Open","priority":"Medium","due":"","tags":[],"notes":[],"link":"https://utk.teamdynamix.com/TDNext/Apps/2278/Tickets/TicketDet?TicketID=24525562","created":"2026-09-10","assigned":"2026-11-09","camps":[]},{"id":"pr66ffm","ref":"24421017","title":"Completed a non-labor cost transaction","status":"Open","priority":"Medium","due":"","tags":[],"notes":[],"desc":"","created":"2026-08-24","assigned":"2026-11-09","link":"https://utk.teamdynamix.com/TDNext/Apps/2278/Tickets/TicketDet?TicketID=24421017","camps":[]},{"id":"hm12lec","ref":"24756613","title":"Staff Benefits Rate is overcharging an SPN number","status":"Open","priority":"Medium","due":"","tags":[],"notes":[],"link":"https://utk.teamdynamix.com/TDNext/Apps/2278/Tickets/TicketDet?TicketID=24756613","assigned":"2026-11-09","created":"2026-11-09","camps":[]},{"id":"xduqswn","ref":"24710212","title":"Gibbons_SPN113498_Cost excluded from F/A","status":"In progress","priority":"Medium","due":"","tags":[],"notes":[{"t":"2026-11-10 17:02","x":"10/29 sent Christie response"}],"created":"2026-10-28","link":"https://utk.teamdynamix.com/TDNext/Apps/2278/Tickets/TicketDet?TicketID=24710212","assigned":"2026-10-29","camps":[]},{"id":"igrca2s","ref":"24693898","title":"Governors School for Humanities Committments","status":"In progress","priority":"Medium","due":"","tags":["PO"],"notes":[{"t":"2026-11-10 16:17","x":"11/6 worked through and found the following:\n11/9 met with Casey about the issue during a Teams call\nShe later had Joanne reach out as she is who typically makes those entries"},{"t":"2026-11-10 16:31","x":"Met with Joyanne Gansereit this AM\nFound that there may be a way to update the invoice\nManage Invoice > Enter the invoice number > Add the PO number, however unsure if have to validate, can we push through, etc.\nWill add a taks to do this","task":"lh5s9ix"},{"t":"2026-11-10 16:39","x":"Original Request: There are 6 items listed in commitments.  On the manage project costs screen they all say fully invoiced.  Under the payables screen, I only see 6302.55,2519.24,5341.35.  This grant is over budget we need to know why these are still showing as commitments."}],"steps":"A few places to check: \n\n   * Manage Project Costs: Add PO columns to see \n      * Click on Transaction \n      * Payables > Manage Invoices \n         * Supplier Invoice Number\n            * Search \n         * Open the invoice and review: \n            * Invoice Lines \n                * Check the Line and the PO would be there \n\n* Navigator → Projects → Costs → Manage Committed Costs \n   * Search by Project Number to see all assigned \n* PayRequisition → PO → Receipt → AP Invoice \n\n ","created":"2026-10-23","pb":[{"id":"r4087pc","st":"Trying"}],"desc":"","assigned":"2026-10-29","link":"https://utk.teamdynamix.com/TDNext/Apps/2278/Tickets/TicketDet?TicketID=24693898","camps":[]}],"tasks":[{"id":"i1a3zyp","title":"SPA | Request from Dynise","notes":[],"status":"To do","priority":"Medium","due":"","ref":"","upd":"2026-11-11 10:26","doneAt":"","camps":["UTK | SPA"]},{"id":"ug1h58v","title":"SPA | AR List","notes":[],"status":"To do","priority":"Medium","due":"","ref":"","upd":"2026-11-11 10:27","doneAt":"","camps":["UTK | SPA"]},{"id":"8kazzgw","title":"API Wizard Issues","notes":[],"status":"To do","priority":"Medium","due":"","ref":"","upd":"2026-11-11 10:27","camps":["UTK"],"doneAt":""},{"id":"iz3u3ym","title":"She should be able to make the change to cost reimbursable ... need to find out who set it up","status":"To do","priority":"Medium","due":"","ref":"24084320","notes":[{"t":"2026-11-10 17:06","x":"From a note on 24084320 Bill plan change: She should be able to make the change to cost reimbursable ... need to find out who set it up"}],"camps":[],"upd":"2026-11-11 10:27","doneAt":""},{"id":"0whmrft","title":"Review spreadsheet that Christie sent back on 11/3","status":"To do","priority":"Medium","due":"","ref":"24710212","notes":[],"camps":[]},{"id":"lh5s9ix","title":"Met with Joyanne Gansereit this AM Found that there may be a way to update the invoice Manage Invoice > Enter the invoice number > Add th...","status":"To do","priority":"Medium","due":"","ref":"24693898","notes":[{"t":"2026-11-10 16:37","x":"From a note on 24693898 Governors School for Humanities Committments: Met with Joyanne Gansereit this AM Found that there may be a way to update the invoice Manage Invoice > Enter the invoice number > Add the PO number, however unsure if have to validate, can we push through, etc. Will add a taks to do this"}],"camps":["UTM"],"upd":"2026-11-11 10:27","doneAt":""},{"id":"szcs1g2","title":"SPA | CR List","notes":[],"status":"Done","priority":"Medium","due":"","ref":"","tags":["spa","excel"],"camps":["UTK | SPA"],"upd":"2026-11-11 10:27","doneAt":"2026-11-11"},{"id":"fw0r37x","title":"SPA | FP List","notes":[],"status":"Done","priority":"Medium","due":"","ref":"","tags":["spa","excel"],"camps":["UTK | SPA"],"upd":"2026-11-11 10:27","doneAt":"2026-11-11"}],"meetings":[],"playbook":[{"id":"xajlggy","title":"IDC Explanation","ref":"24488696","tags":["IDC","F&A","Burden","SP Knowledge"],"steps":"When the MTDC base is used, which is the most common indirect cost methodology for sponsored projects, Participant Support Costs do not generate burden because they are specifically excluded from the base.\n\nTotal Direct Costs (TDC)\n\nIndirect cost is generated on all allowable direct costs charged to the project.\n\nEvery eligible direct expenditure is included in the indirect cost calculation unless the award terms specifically state otherwise.\n\nModified Total Direct Costs (MTDC)\n\nThe screenshot you shared is the Expenditure Category, which you likely already know. Sometimes it may be that the burden is generated based on the Expenditure Type instead of the Expenditure Category.\n\nCommon MTDC exclusions that we currently see include:\n\nEquipment & Capital expenditures\nShould be all Expenditure Types within the Equipment & Capital Expenditure Category\nPatient care costs\nExpenditure Type Patient Care Costs within the Other Direct Costs Expenditure Category\nRental costs of real property and equipment\nExpenditure Type could be several within the Other Direct Costs Expenditure Category\nStudent Fees & Student Aid\nExpenditure Type Student Aid and Stipends & Student Fees within the Other Direct Costs Expenditure Category\nParticipant Support Costs\nShould be all Expenditure Types within the Participant Support Costs Expenditure Category\nThese exclusions are not defined by the university. They are defined by the federal Uniform Guidance and included into the system's negotiated rate agreement. Exceptions generally cannot be added or removed at the university level without sponsor approval and compliance with federal regulations.","notes":[]},{"id":"3ll2jhm","title":"Sponsored Project Financial Summary Report","ref":"24356180","tags":["Budget","Baseline","Sponsored Project Financial Summary Report"],"steps":"Sponsored Project Financial Summary Report not matching the budget\n\nBaseline budget and the current working budget have to match\nthis report pulls from the baseline   ","notes":[]},{"id":"r4087pc","title":"Purchase Order Not Appearing as Invoiced","ref":"24693898","tags":["PO"],"steps":"Showing invoiced in manage project costs\nA few places to check: \n\n   * Manage Project Costs: Add PO columns to see \n      * Click on Transaction \n      * Payables > Manage Invoices \n         * Supplier Invoice Number\n            * Search \n         * Open the invoice and review: \n            * Invoice Lines \n                * Check the Line and the PO would be there \n\n* Navigator → Projects → Costs → Manage Committed Costs \n   * Search by Project Number to see all assigned \n* PayRequisition → PO → Receipt → AP Invoice \n\n ","notes":[]}],"settings":{"statuses":{"tickets":[{"n":"Open","c":"blue","k":"open"},{"n":"In progress","c":"amber","k":"active"},{"n":"Blocked","c":"red","k":"open"},{"n":"Done","c":"green","k":"done"}],"tasks":[{"n":"To do","c":"purple","k":"open"},{"n":"Doing","c":"amber","k":"active"},{"n":"Done","c":"green","k":"done"}],"meetings":[{"n":"Scheduled","c":"blue","k":"open"},{"n":"Done","c":"green","k":"done"},{"n":"Cancelled","c":"gray","k":"done"}]},"campuses":[{"k":"UTK","n":"Knoxville","c":"#FF8200","e":"🟠"},{"k":"UTHSC","n":"Health Science Center","c":"#2E7FA6","e":"⚕️"},{"k":"UTC","n":"Chattanooga","c":"#C8A20B","e":"🟡"},{"k":"UTM","n":"Martin","c":"#2B6CB0","e":"🦅"},{"k":"UTSI","n":"Space Institute","c":"#7A5AF8","e":"🚀"},{"k":"UTS","n":"Southern","c":"#C2410C","e":"🔥"},{"k":"UTIA","n":"Institute of Agriculture","c":"#2F8F56","e":"🌿"},{"k":"UTSA","n":"System Administration","c":"#8B5CF6","e":"🏛️"},{"k":"OTHER","n":"Other","c":"#8A8A85","e":"🌐"},{"k":"UTK | SPA","n":"UTK - Sponsored Projects","c":"#FF8200","e":"⏮️"}]},"weekly":{"2026-11-09":{"skip":{}}},"summary":{}}</script>
+<script>
+/* ---- password gate (v8). Change the password on the next line. ---- */
+const PASSWORD='DTS26';
+const AK='worktracker.auth';
+function tryPw(){const i=document.getElementById('pw'),e=document.getElementById('pwerr');
+ if((i.value||'')===PASSWORD){e.classList.remove('on');i.value='';document.getElementById('lock').classList.remove('on');try{sessionStorage.setItem(AK,'1')}catch(x){}}
+ else{e.classList.add('on');try{i.select()}catch(x){}}}
+(function(){let ok=false;try{ok=sessionStorage.getItem(AK)==='1'}catch(e){}
+ const l=document.getElementById('lock');
+ if(!ok){l.classList.add('on');setTimeout(function(){const p=document.getElementById('pw');if(p)p.focus()},60)}
+ document.getElementById('pwgo').onclick=tryPw;
+ document.getElementById('pw').addEventListener('keydown',function(ev){if(ev.key==='Enter'){ev.preventDefault();tryPw()}});})();
+</script>
+<script>
+const KEY='worktracker.v1';
+let S={tickets:[],tasks:[],meetings:[],playbook:[]},tab='dash',q='',showDone=false,tagF='',pend='',ed={},srt={},open={};
+let _seed=null;try{const sn=document.getElementById('seed');if(sn&&sn.textContent.trim()&&sn.textContent.trim()!=='null')_seed=JSON.parse(sn.textContent)}catch(e){}
+let _raw=null;try{_raw=localStorage.getItem(KEY)}catch(e){}
+if(_raw){try{S=Object.assign(S,JSON.parse(_raw))}catch(e){}}else if(_seed){S=Object.assign(S,_seed);try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+const DEF={campuses:null,statuses:{tickets:[{n:'Open',c:'blue',k:'open'},{n:'In progress',c:'amber',k:'active'},{n:'Blocked',c:'red',k:'open'},{n:'Done',c:'green',k:'done'}],tasks:[{n:'To do',c:'gray',k:'open'},{n:'Doing',c:'amber',k:'active'},{n:'Done',c:'green',k:'done'}],meetings:[{n:'Scheduled',c:'blue',k:'open'},{n:'Done',c:'green',k:'done'},{n:'Cancelled',c:'gray',k:'done'}]}};
+S.settings=S.settings||JSON.parse(JSON.stringify(DEF));
+S.summary=S.summary||{};
+const SS=t=>(S.settings.statuses||{})[t]||[];
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const uid=()=>Math.random().toString(36).slice(2,9);
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const ST={get tickets(){return SS('tickets').map(s=>s.n)},get tasks(){return SS('tasks').map(s=>s.n)},get meetings(){return SS('meetings').map(s=>s.n)}};
+const PR=['Low','Medium','High'];
+const now=()=>new Date(Date.now()-new Date().getTimezoneOffset()*6e4);
+const today=()=>now().toISOString().slice(0,10);
+const inDays=n=>new Date(now().getTime()+n*864e5).toISOString().slice(0,10);
+const stamp=()=>now().toISOString().slice(0,16).replace('T',' ');
+const fmtD=s=>{const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(s||'');return m?`${m[2]}/${m[3]}/${m[1]}`:(s||'')};
+const fmtT=s=>{const m=/^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2}))?/.exec(s||'');if(!m)return s||'';let r=`${m[2]}/${m[3]}/${m[1]}`;if(m[4]){let h=+m[4];const ap=h>=12?'PM':'AM';h=h%12||12;r+=` ${h}:${m[5]} ${ap}`}return r};
+const TABS=[['dash','Dashboard'],['tickets','Tickets'],['tasks','Tasks'],['meetings','Meetings'],['playbook','Playbook'],['summary','Weekly summary'],['settings','Settings']];
+const opts=(a,v)=>a.map(x=>`<option${x===v?' selected':''}>${esc(x)}</option>`).join('');
+const find=(k,id)=>S[k].find(x=>x.id===id);
+
+function fld(k,it,f,label,type){
+  return `<div><label>${label}</label><input type="${type||'text'}" value="${esc(it[f])}" data-k="${k}" data-id="${it.id}" data-f="${f}"></div>`;}
+const tg=it=>(it.tags||[]).map(t=>`<span class="pill tg" data-act="tag" data-t="${esc(t)}">#${esc(t)}</span>`).join('');
+const tagf=(k,it)=>`<div style="margin-bottom:6px"><label>Tags (comma-separated)</label><input value="${esc((it.tags||[]).join(', '))}" data-k="${k}" data-id="${it.id}" data-f="tags"></div>`;
+const tsel=k=>{const all=[...new Set(S[k].flatMap(x=>x.tags||[]))].sort();return all.length?`<select id="tf" style="width:auto"><option value="">All tags</option>${all.map(t=>`<option value="${esc(t)}"${t===tagF?' selected':''}>#${esc(t)}</option>`).join('')}</select>`:''};
+const lsel=(k,it,lb)=>{const ts=S.tickets.filter(t=>t.ref);const has=ts.some(t=>t.ref===it.ref);return `<div><label>${lb||'Linked ticket'}</label><select data-k="${k}" data-id="${it.id}" data-f="ref"><option value="">None</option>${ts.map(t=>`<option value="${esc(t.ref)}"${t.ref===it.ref?' selected':''}>${esc(t.ref)}${t.title?' – '+esc(t.title):''}</option>`).join('')}${it.ref&&!has?`<option value="${esc(it.ref)}" selected>${esc(it.ref)}</option>`:''}</select></div>`};
+const tc=it=>{const ts=it.ref?S.tasks.filter(t=>t.ref===it.ref):[];return ts.length?`<span class="pill">${ts.filter(t=>isDone('tasks',t)).length}/${ts.length} tasks done</span>`:''};
+const linkedOld=it=>{const ts=it.ref?S.tasks.filter(t=>t.ref===it.ref):[];if(!ts.length)return '';return `${ts.map(t=>`<div class="mini" data-act="goto" data-k="tasks" data-id="${t.id}"><span class="t">${esc(t.title||'Untitled')}</span><span class="pill ${t.status}">${t.status}</span>${t.due?`<span class="pill">${esc(fmtD(t.due))}</span>`:''}</div>`).join('')}`};
+const bul=/^[*\-•◦▪▫●○]\s+/;
+function outline(s){const st=[];return (s||'').split('\n').map(l=>{if(!l.trim())return '<div style="height:6px"></div>';const w=(/^[ \t]*/.exec(l)[0]).replace(/\t/g,'    ').length;while(st.length&&st[st.length-1]>w)st.pop();if(!st.length||st[st.length-1]<w)st.push(w);const d=st.length-1;let t=l.trim();const b=bul.test(t);t=t.replace(bul,'');return `<div class="ol" style="margin-left:${d*18}px">${b?`<span class="bl">${d%2?'◦':'•'}</span>`:''}<span>${esc(t)}</span></div>`}).join('')}
+const stepsUI=(k,it,label)=>{const e=ed[it.id],has=it.steps&&it.steps.trim();return (e?`${tbar('s-'+it.id)}<textarea class="mono rt" id="s-${it.id}" rows="12" data-k="${k}" data-id="${it.id}" data-f="steps" placeholder="Paste or type steps. Indent to nest. Use *, - or • for bullets. Tab indents a bullet line.">${esc(it.steps)}</textarea><div style="margin-top:6px"><button class="btn p" data-act="edsteps" data-id="${it.id}">Done editing</button></div>`:(has?`<div class="outl">${rich(it.steps)}</div><div style="margin-top:6px"><button class="btn" data-act="edsteps" data-id="${it.id}">Edit</button></div>`:`<div><button class="btn" data-act="edsteps" data-id="${it.id}">Add steps</button></div>`))};
+const PBS=['To try','Trying','Fixed it','Partial fix','Ruled out'];
+const ntask=(k,it,i,n)=>{const t=n.task&&S.tasks.find(x=>x.id===n.task);return t?`<span data-act="goto" data-k="tasks" data-id="${t.id}" style="margin-left:8px;color:var(--ok);cursor:pointer;font-size:12px">✓ task created →</span>`:`<label style="display:inline-flex;gap:4px;align-items:center;margin:0 0 0 8px;cursor:pointer;font-size:12px"><input type="checkbox" style="width:auto" data-act="mktask" data-k="${k}" data-id="${it.id}" data-i="${i}"> make task</label>`};
+const linked=it=>{if(!it.ref)return `<div class="empty">Add a Ticket # above to link tasks.</div>`;const ts=S.tasks.filter(t=>t.ref===it.ref),rest=S.tasks.filter(t=>t.ref!==it.ref&&!isDone('tasks',t));
+return `${ts.map(t=>`<div class="mini" data-act="goto" data-k="tasks" data-id="${t.id}"><span class="t">${esc(t.title||'Untitled')}</span><span class="pill ${stc('tasks',t.status)}">${esc(t.status)}</span>${t.due?`<span class="pill">${esc(fmtD(t.due))}</span>`:''}<button class="btn" data-act="unlinktask" data-id="${t.id}" title="Unlink">✕</button></div>`).join('')||'<div class="empty">No tasks linked yet.</div>'}<div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap"><input id="nt-${it.id}" placeholder="New task for this ticket" style="flex:1;min-width:140px"><button class="btn" data-act="addtask" data-id="${it.id}">Add task</button></div>${rest.length?`<select data-linktask="${it.id}" style="margin-top:6px"><option value="">Link an existing task…</option>${rest.map(t=>`<option value="${t.id}">${esc(t.title||'Untitled')}${t.ref?' (now on '+esc(t.ref)+')':''}</option>`).join('')}</select>`:''}`};
+const pbui=it=>{const ls=(it.pb||[]).map(x=>({x,p:S.playbook.find(p=>p.id===x.id)})).filter(r=>r.p),have=new Set((it.pb||[]).map(x=>x.id)),rest=S.playbook.filter(p=>!have.has(p.id));
+return `${ls.map(({x,p})=>`<div class="mini"><span class="t" data-act="goto" data-k="playbook" data-id="${p.id}" style="cursor:pointer">${esc(p.title||'Untitled')}</span><select class="pill pb${PBS.indexOf(x.st)}" style="width:auto" data-pbt="${it.id}" data-pbid="${p.id}">${opts(PBS,x.st)}</select><button class="btn" data-act="unpb" data-id="${it.id}" data-pb="${p.id}" title="Unlink">✕</button></div>`).join('')||'<div class="empty">None linked yet.</div>'}<div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap">${rest.length?`<select data-pbadd="${it.id}" style="flex:1;min-width:160px"><option value="">Link a playbook entry…</option>${rest.map(p=>`<option value="${p.id}">${esc(p.title||'Untitled')}</option>`).join('')}</select>`:''}<button class="btn" data-act="newpb" data-id="${it.id}">+ New playbook entry</button></div>`};
+const usedOn=p=>{const r=S.tickets.filter(t=>(t.pb||[]).some(x=>x.id===p.id));return r.length?`<label>Used on tickets</label>${r.map(t=>{const x=t.pb.find(y=>y.id===p.id);return `<div class="mini" data-act="goto" data-k="tickets" data-id="${t.id}"><span class="t">${t.ref?`<span class="ref">${esc(t.ref)}</span>`:''}${esc(t.title||'Untitled')}</span><span class="pill pb${PBS.indexOf(x.st)}">${esc(x.st)}</span></div>`}).join('')}`:''};
+const rk=(a,v)=>{const i=a.indexOf(v);return i<0?99:i};
+const PRI={High:0,Medium:1,Low:2};
+const cs=(a,b)=>(a||'').toLowerCase().localeCompare((b||'').toLowerCase(),undefined,{numeric:true});
+const byPri=(x,y)=>(PRI[x.priority]??1)-(PRI[y.priority]??1);
+const byTitle=(x,y)=>cs(x.title,y.title);
+const SORTS={
+ tickets:{'Newest added':null,'Newest created':(x,y)=>(y.created||'').localeCompare(x.created||''),'Oldest created':(x,y)=>(x.created||'9').localeCompare(y.created||'9'),'Newest assigned':(x,y)=>(y.assigned||'').localeCompare(x.assigned||''),'Status':(x,y)=>rk(ST.tickets,x.status)-rk(ST.tickets,y.status),'Priority':byPri,'Ticket #':(x,y)=>cs(x.ref,y.ref),'Title A-Z':byTitle},
+ tasks:{'Due date':(x,y)=>(x.due||'9').localeCompare(y.due||'9'),'Newest added':null,'Status':(x,y)=>rk(ST.tasks,x.status)-rk(ST.tasks,y.status),'Priority':byPri,'Title A-Z':byTitle},
+ meetings:{'Date (newest first)':(x,y)=>(y.date||'').localeCompare(x.date||''),'Date (oldest first)':(x,y)=>(x.date||'9').localeCompare(y.date||'9'),'Status':(x,y)=>rk(ST.meetings,x.status||'Scheduled')-rk(ST.meetings,y.status||'Scheduled'),'Title A-Z':byTitle},
+ playbook:{'Newest added':null,'Title A-Z':byTitle}
+};
+const ssel=k=>{const cur=srt[k]||Object.keys(SORTS[k])[0];return `<select id="sf" style="width:auto" title="Sort">${Object.keys(SORTS[k]).map(n=>`<option value="${esc(n)}"${n===cur?' selected':''}>Sort: ${esc(n)}</option>`).join('')}</select>`};
+const descUI=it=>`<div>${tbar('d-'+it.id)}<textarea class="rt" id="d-${it.id}" rows="4" placeholder="Describe the problem or request. Use • or - for bullets, Tab to indent." data-k="tickets" data-id="${it.id}" data-f="desc">${esc(it.desc||'')}</textarea></div>`;
+const safeUrl=u=>{u=(u||'').trim();if(!u)return '';if(!/^https?:\/\//i.test(u))u='https://'+u;try{const p=new URL(u);return /^https?:$/.test(p.protocol)?p.href:''}catch(e){return ''}};
+const linkUI=it=>{const u=tdxUrl(it),n=tdxNo(it);return `<div style="margin-top:8px"><label>TeamDynamix</label>${u?`<a class="btn" href="${esc(u)}" target="_blank" rel="noopener noreferrer" style="text-decoration:none;white-space:nowrap;color:var(--acc)" title="Open ticket ${esc(n)} in TeamDynamix">TDX ↗${n?' &nbsp;'+esc(n):''}</a>`:`<div class="empty" style="padding:2px">Enter the ticket number above and the TDX link is built for you.</div>`}</div>`};
+const linkIcon=it=>{const u=tdxUrl(it);return u?`<a data-act="none" class="pill" href="${esc(u)}" target="_blank" rel="noopener noreferrer" style="color:var(--acc);border-color:var(--acc);text-decoration:none" title="Open in TeamDynamix">TDX ↗</a>`:''};
+const kindOf=(t,n)=>((SS(t).find(s=>s.n===n))||{}).k||'open';
+const isDone=(t,x)=>kindOf(t,x.status)==='done';
+const stc=(t,n)=>'c-'+(((SS(t).find(s=>s.n===n))||{}).c||'gray');
+const stOf=(t,k)=>{const a=SS(t),m=a.find(s=>s.k===k);return (m||a[0]||{n:''}).n};
+const COLORS=['gray','blue','amber','red','green','purple','teal'];
+const KINDS=[['open','Not started'],['active','In progress'],['done','Finished']];
+function settingsUI(){
+const all={};['tickets','tasks','meetings','playbook'].forEach(k=>S[k].forEach(x=>(x.tags||[]).forEach(t=>{all[t]=(all[t]||0)+1})));
+const tl=Object.keys(all).sort(cs);
+const tags='<h2>Tags</h2>'+(tl.map(t=>`<div class="mini" style="flex-wrap:wrap"><span class="pill c-blue">#${esc(t)}</span><span class="t" style="color:var(--mut)">${all[t]} item${all[t]>1?'s':''}</span>`+(pend==='tag:'+t?`<b>Remove from ${all[t]}?</b><button class="btn d" data-act="deltag2" data-t="${esc(t)}">Yes, remove</button><button class="btn" data-act="cancel">Cancel</button>`:`<input style="width:150px" value="${esc(t)}" data-tagold="${esc(t)}" title="Rename. Use an existing tag name to merge."><button class="btn d" data-act="deltag" data-t="${esc(t)}">Remove</button>`)+'</div>').join('')||'<div class="empty">No tags yet. Add tags to any ticket, task, meeting, or playbook entry.</div>');
+const lab={tickets:'Ticket',tasks:'Task',meetings:'Meeting'};
+const sts=['tickets','tasks','meetings'].map(ty=>{const arr=SS(ty);return `<h2>${lab[ty]} statuses</h2>`+arr.map((s,i)=>{const n=S[ty].filter(x=>x.status===s.n).length;
+if(pend==='st:'+ty+':'+i)return `<div class="mini" style="flex-wrap:wrap"><span class="pill c-${s.c}">${esc(s.n)}</span><span class="t">${n} item${n===1?'':'s'} use this. Move them to:</span><select id="stto" style="width:auto">${arr.filter((o,j)=>j!==i).map(o=>`<option>${esc(o.n)}</option>`).join('')}</select><button class="btn d" data-act="stdel2" data-k="${ty}" data-i="${i}">Delete status</button><button class="btn" data-act="cancel">Cancel</button></div>`;
+return `<div class="mini" style="flex-wrap:wrap"><input style="flex:1;min-width:110px" value="${esc(s.n)}" data-stn="${ty}" data-i="${i}"><select style="width:auto" data-stc="${ty}" data-i="${i}">${COLORS.map(c=>`<option${c===s.c?' selected':''}>${c}</option>`).join('')}</select><select style="width:auto" data-stk="${ty}" data-i="${i}">${KINDS.map(([v,l])=>`<option value="${v}"${v===s.k?' selected':''}>${l}</option>`).join('')}</select><span class="pill c-${s.c}">${esc(s.n)}</span><button class="btn" data-act="stup" data-k="${ty}" data-i="${i}" title="Move up">↑</button><button class="btn" data-act="stdn" data-k="${ty}" data-i="${i}" title="Move down">↓</button>${arr.length>1?`<button class="btn d" data-act="stdel" data-k="${ty}" data-i="${i}" title="Delete">✕</button>`:''}</div>`}).join('')+`<div style="display:flex;gap:6px;margin-top:6px"><input id="stnew-${ty}" placeholder="New status name"><button class="btn" data-act="stadd" data-k="${ty}">Add</button></div>`}).join('');
+return tags+camUI()+sts+dataUI()+`<h2>What the options mean</h2><div class="empty">Finished statuses are hidden unless you tick Show done, and they stop counting as open or overdue. In progress statuses show in the dashboard's In progress list. Rename or merge a tag by typing a new name; using an existing tag's name merges them.</div>`;}
+function sel(k,it,f,label,a){
+  return `<div><label>${label}</label><select data-k="${k}" data-id="${it.id}" data-f="${f}">${opts(a,it[f])}</select></div>`;}
+function notes(k,it){
+  return (it.notes||[]).map((n,i)=>`<div class="note"><div style="flex:1"><small>${esc(fmtT(n.t))}${ntask(k,it,i,n)}</small><div class="rtx">${rich(n.x)}</div></div><button data-act="delnote" data-k="${k}" data-id="${it.id}" data-i="${i}" title="Delete note">✕</button></div>`).join('')+
+  tbar('n-'+it.id)+`<textarea class="rt" placeholder="Add a note…  • starts a bullet, Tab indents it" id="n-${it.id}"></textarea><div style="margin-top:6px"><button class="btn" data-act="note" data-k="${k}" data-id="${it.id}">Add note</button></div>`;}
+
+let csOff={};
+const SECN={det:'Details',desc:'Description',tasks:'Tasks',pb:'Playbook',steps:'Steps',act:'Action items',tags:'Tags',notes:'Notes'};
+function sect(id,sid,html,n){const o=!csOff[id+'|'+sid];
+ return `<div class="cs${o?' op':''}" id="cs-${id}-${sid}"><div class="csh" data-act="csec" data-id="${id}" data-s="${sid}"><span class="cst">${SECN[sid]}</span>${n?`<span class="csn">${n}</span>`:''}<span class="csx">${o?'▾ hide':'▸ show'}</span></div>${o?`<div class="csb">${html}</div>`:''}</div>`}
+function jmpbar(id,ss){return `<div class="jmp">${ss.map(s=>`<button type="button" data-act="jump" data-id="${id}" data-s="${s}">${SECN[s]}</button>`).join('')}</div>`}
+function card(k,it){
+  const o=open[it.id],od=it.due&&!isDone(k,it)&&it.due<today();
+  let head='',secs=[];
+  const nn=(it.notes||[]).length;
+  if(k==='tickets'){
+    head=`<span class="t">${it.ref?`<span class="ref">${esc(it.ref)}</span>`:''}${esc(it.title||'Untitled')}</span><span class="pill ${stc('tickets',it.status)}">${esc(it.status)}</span>${tc(it)}${it.created?`<span class="pill">Created ${esc(fmtD(it.created))}</span>`:''}${campill(it)}${linkIcon(it)}${it.priority==='High'?'<span class="pill hi">High</span>':''}${tg(it)}`;
+    secs=[['det',`<div class="grid">${fld(k,it,'ref','Ticket #')}${fld(k,it,'title','Title')}${sel(k,it,'status','Status',ST.tickets)}${sel(k,it,'priority','Priority',PR)}${fld(k,it,'created','Created','date')}${fld(k,it,'assigned','Assigned to me','date')}${camsel(k,it)}</div>${linkUI(it)}`,0],
+      ['desc',descUI(it),0],
+      ['tasks',linked(it),it.ref?S.tasks.filter(t=>t.ref===it.ref).length:0],
+      ['pb',pbui(it),(it.pb||[]).length],
+      ['tags',tagf(k,it),(it.tags||[]).length],
+      ['notes',notes(k,it),nn]];
+  }else if(k==='playbook'){
+    head=`<span class="t">${esc(it.title||'Untitled')}</span>${tg(it)}`;
+    secs=[['det',`<div class="grid">${fld(k,it,'title','Problem / title')}${lsel(k,it,'From ticket')}</div>${it.ref&&S.tickets.some(t=>t.ref===it.ref)?`<div style="margin-top:8px"><button class="btn" data-act="gotok" data-ref="${esc(it.ref)}">Open ticket ${esc(it.ref)} →</button></div>`:''}${usedOn(it)}`,0],
+      ['steps',stepsUI(k,it,'Steps'),0],
+      ['tags',tagf(k,it),(it.tags||[]).length],
+      ['notes',notes(k,it),nn]];
+  }else if(k==='tasks'){
+    head=`<span class="t">${esc(it.title||'Untitled')}</span>${it.ref?`<span class="pill">${esc(it.ref)}</span>`:''}${campill(it)}<span class="pill ${stc('tasks',it.status)}">${esc(it.status)}</span>${it.priority==='High'?'<span class="pill hi">High</span>':''}${it.due?`<span class="pill ${od?'od':''}">${esc(fmtD(it.due))}</span>`:''}${tg(it)}`;
+    secs=[['det',`<div class="grid">${fld(k,it,'title','Task')}${sel(k,it,'status','Status',ST.tasks)}${sel(k,it,'priority','Priority',PR)}${fld(k,it,'due','Due','date')}${camsel(k,it)}${lsel(k,it)}</div>`,0],
+      ['tags',tagf(k,it),(it.tags||[]).length],
+      ['notes',notes(k,it),nn]];
+  }else{
+    head=`<span class="t">${esc(it.title||'Untitled')}</span><span class="pill ${stc('meetings',it.status||stOf('meetings','open'))}">${esc(it.status||stOf('meetings','open'))}</span><span class="pill">${esc(it.date?fmtD(it.date):'no date')}</span>${campill(it)}${tg(it)}`;
+    secs=[['det',`<div class="grid">${fld(k,it,'title','Meeting')}${fld(k,it,'date','Date','date')}${sel(k,it,'status','Status',ST.meetings)}${fld(k,it,'who','Attendees')}${camsel(k,it)}</div>`,0],
+      ['act',`<div style="display:flex;gap:6px"><input id="a-${it.id}" placeholder="Action item → becomes a task"><button class="btn" data-act="action" data-id="${it.id}">Add task</button></div>`,0],
+      ['tags',tagf(k,it),(it.tags||[]).length],
+      ['notes',notes(k,it),nn]];
+  }
+  const ac=k==='playbook'?'ac-purple':'ac-'+(((SS(k).find(s=>s.n===it.status))||{}).c||'gray');
+  const body=jmpbar(it.id,secs.map(s=>s[0]))+secs.map(s=>sect(it.id,s[0],s[1],s[2])).join('')+
+    `<div style="margin-top:10px">${pend===it.id?`<b>Delete this item?</b> <button class="btn d" data-act="del" data-k="${k}" data-id="${it.id}">Yes, delete</button> <button class="btn" data-act="cancel">Cancel</button>`:`<button class="btn d" data-act="ask" data-id="${it.id}">Delete</button>`}</div>`;
+  return `<div class="card ${ac}${o?' op':''}" id="c-${it.id}"><div class="head" data-act="toggle" data-id="${it.id}">${head}</div>${o?`<div class="body">${body}</div>`:''}</div>`;
+}
+
+function list(k){
+  const lab={tickets:'ticket',tasks:'task',meetings:'meeting',playbook:'playbook entry'}[k];
+  const a=visible(k);
+  return `<div class="bar"><input type="search" id="q" placeholder="Search ${k}…" value="${esc(q)}">${tsel(k)}${ssel(k)}<button class="btn p" data-act="new" data-k="${k}">+ New ${lab}</button>${k==='tickets'||k==='meetings'?`<button class="btn" data-act="imp" data-k="${k}">Import ${k}</button>`:''}${k==='playbook'?'':`<label style="display:flex;align-items:center;gap:4px;margin:0"><input type="checkbox" style="width:auto" id="sd"${showDone?' checked':''}> Show done</label>`}<button class="btn" data-act="csv" data-k="${k}" title="Download the list you are looking at">Download CSV</button></div>`+fbar(k)+(a.map(x=>card(k,x)).join('')||`<div class="empty">Nothing matches${(flt[k]&&anyF(flt[k]))||q||tagF?' — try clearing the filters or search.':' here yet.'}</div>`);
+}
+
+function dash(){
+  const act=S.tickets.filter(t=>!isDone('tickets',t)),inp=S.tickets.filter(t=>kindOf('tickets',t.status)==='active'),td=S.tasks.filter(t=>!isDone('tasks',t));
+  const soon=[...S.tasks.map(x=>['tasks',x])].filter(([k,x])=>!isDone(k,x)&&x.due&&x.due<=inDays(7)).sort((a,b)=>a[1].due.localeCompare(b[1].due));
+  const mt=S.meetings.filter(m=>m.date&&m.date>=today()&&!isDone('meetings',m)).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,6);
+  const row=(k,x,r)=>`<div class="mini" data-act="goto" data-k="${k}" data-id="${x.id}"><span class="t">${r}</span><span style="color:var(--acc);white-space:nowrap">Open →</span></div>`;
+  const stat=(k,sf,n,l,c)=>`<div class="stat lnk" data-act="statgo" data-k="${k}" data-sf="${sf}" title="Show these" style="--tc:${c}"><b>${n}</b><span>${l} →</span></div>`;
+  const cm={};act.forEach(t=>{const l=camList(t);if(!l.length)cm['']=(cm['']||0)+1;else l.forEach(c=>cm[c]=(cm[c]||0)+1)});
+  const ck=Object.keys(cm).sort((x,y)=>cm[y]-cm[x]||cs(x,y));
+  const camrows=ck.map(c=>{const o=c?camObj(c):null;return `<div class="mini" data-act="camgo" data-c="${esc(c)}"><span class="t">${o?`<span class="pill cam" style="--cc:${esc(o.c)}">${o.e?o.e+' ':''}${esc(o.k)}</span> <span style="color:var(--mut);font-size:13px">${esc(o.n)}</span>`:'<span class="pill">No campus set</span>'}</span><b style="margin-right:10px">${cm[c]}</b><span style="color:var(--acc);white-space:nowrap">View →</span></div>`}).join('');
+  return `<div class="stats">${stat('tickets','open',act.length,'Open tickets','var(--acc)')}${stat('tickets','active',inp.length,'In progress','var(--warn)')}${stat('tasks','open',td.length,'Open tasks','var(--pur)')}${stat('tasks','over',soon.filter(([k,x])=>x.due<today()).length,'Overdue','var(--bad)')}</div>
+  <h2>Open tickets by campus <span class="n">${ck.length}</span></h2>${camrows||'<div class="empty">No open tickets.</div>'}
+  <h2>In progress <span class="n">${inp.length}</span></h2>${inp.map(t=>row('tickets',t,`<span class="ref">${esc(t.ref)}</span>${esc(t.title)} ${campill(t)}`)).join('')||'<div class="empty">No tickets in progress.</div>'}
+  <h2>Tasks due within 7 days or overdue <span class="n">${soon.length}</span></h2>${soon.map(([k,x])=>row(k,x,`${esc(x.title)} <span class="pill ${x.due<today()?'od':''}">${esc(fmtD(x.due))}</span>`)).join('')||'<div class="empty">Nothing due soon.</div>'}
+  <h2>Upcoming meetings <span class="n">${mt.length}</span></h2>${mt.map(m=>row('meetings',m,`${esc(m.title)} <span class="pill">${esc(fmtD(m.date))}</span>`)).join('')||'<div class="empty">No upcoming meetings.</div>'}`;
+}
+
+const SUBS={dash:'Everything that needs you, at a glance.',tickets:'Your TeamDynamix work.',tasks:'Smaller pieces of work and follow-ups.',meetings:'Meetings and the action items that come out of them.',playbook:'Fixes worth remembering.',summary:'Six questions, answered from what you already logged.',settings:'Statuses, campuses, tags, and your data.'};
+function render(){
+  if(Array.isArray(S[tab])&&tagF&&!S[tab].some(x=>(x.tags||[]).includes(tagF)))tagF='';
+  const tl=(TABS.find(t=>t[0]===tab)||['','Work Tracker'])[1];
+  const h1=document.getElementById('ttl'),sb=document.getElementById('sub');
+  if(h1)h1.textContent=tl;if(sb)sb.textContent=SUBS[tab]||'';
+  document.getElementById('nav').innerHTML=TABS.map(([k,l])=>`<button class="${tab===k?'on':''}" data-act="tab" data-k="${k}">${l}</button>`).join('');
+  document.getElementById('main').innerHTML=tab==='dash'?dash():tab==='settings'?settingsUI():tab==='summary'?sumUI():list(tab);
+}
+
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-act]');if(!b)return;
+  const a=b.dataset.act,k=b.dataset.k,id=b.dataset.id;
+  if(a==='tab'){tab=k;q='';tagF='';render();}
+  else if(a==='tag'){tagF=b.dataset.t;render();}
+  else if(a==='toggle'){const was=open[id];open={};if(!was)open[id]=true;render();if(!was){const ge=document.getElementById('c-'+id);if(ge)ge.scrollIntoView({block:'nearest'});}}
+  else if(a==='goto'){tab=k;q='';tagF='';open={};open[id]=true;const gi=find(k,id);if(gi&&isDone(k,gi))showDone=true;render();const ge=document.getElementById('c-'+id);if(ge){ge.scrollIntoView({block:'start'});ge.classList.add('hl');setTimeout(()=>ge.classList.remove('hl'),1600);}}
+  else if(a==='new'){const it={id:uid(),title:'',notes:[]};
+    if(k==='tickets')Object.assign(it,{ref:'',status:stOf('tickets','open'),priority:'Medium',created:today(),assigned:today()});
+    if(k==='tasks')Object.assign(it,{status:stOf('tasks','open'),priority:'Medium',due:'',ref:''});
+    if(k==='meetings')Object.assign(it,{date:today(),who:'',status:stOf('meetings','open')});
+    if(k==='playbook'){Object.assign(it,{ref:'',tags:[],steps:''});ed[it.id]=true;}
+    S[k].unshift(it);open={};open[it.id]=true;save();render();}
+  else if(a==='del'){S[k]=S[k].filter(x=>x.id!==id);if(k==='playbook')S.tickets.forEach(t=>{t.pb=(t.pb||[]).filter(x=>x.id!==id)});pend='';save();render();}
+  else if(a==='ask'){pend=id;render();}
+  else if(a==='imp'){openImp(k);}
+  else if(a==='deltag'){pend='tag:'+b.dataset.t;render();}
+  else if(a==='deltag2'){const old=b.dataset.t;['tickets','tasks','meetings','playbook'].forEach(kk=>S[kk].forEach(x=>{if(x.tags)x.tags=x.tags.filter(g=>g!==old)}));pend='';save();render();}
+  else if(a==='stadd'){const v=document.getElementById('stnew-'+k).value.trim();if(v&&!SS(k).some(s=>s.n===v)){SS(k).push({n:v,c:'gray',k:'open'});save();}render();}
+  else if(a==='stup'||a==='stdn'){const arr=SS(k),i=+b.dataset.i,j=a==='stup'?i-1:i+1;if(j>=0&&j<arr.length){[arr[i],arr[j]]=[arr[j],arr[i]];save();}render();}
+  else if(a==='stdel'){pend='st:'+k+':'+b.dataset.i;render();}
+  else if(a==='stdel2'){const arr=SS(k),i=+b.dataset.i,s=arr[i],to=document.getElementById('stto').value;if(s&&arr.length>1&&to&&to!==s.n){S[k].forEach(x=>{if(x.status===s.n)x.status=to});arr.splice(i,1);save();}pend='';render();}
+  else if(a==='edsteps'){ed[id]=!ed[id];render();}
+  else if(a==='newpb'){const t=find('tickets',id);const p={id:uid(),title:'',ref:t.ref||'',tags:[],steps:'',notes:[]};S.playbook.unshift(p);(t.pb=t.pb||[]).push({id:p.id,st:'To try'});tab='playbook';q='';tagF='';open={};open[p.id]=true;ed[p.id]=true;save();render();}
+  else if(a==='unpb'){const t=find('tickets',id);t.pb=(t.pb||[]).filter(x=>x.id!==b.dataset.pb);save();render();}
+  else if(a==='gotok'){const t=S.tickets.find(x=>x.ref===b.dataset.ref);if(t){tab='tickets';q='';tagF='';open={};open[t.id]=true;if(isDone('tickets',t))showDone=true;render();const ge=document.getElementById('c-'+t.id);if(ge){ge.scrollIntoView({block:'start'});ge.classList.add('hl');setTimeout(()=>ge.classList.remove('hl'),1600);}}}
+  else if(a==='addtask'){const t=find('tickets',id),v=document.getElementById('nt-'+id).value.trim();if(!v)return;S.tasks.unshift({id:uid(),title:v,status:stOf('tasks','open'),priority:'Medium',due:'',ref:t.ref,notes:[]});save();render();}
+  else if(a==='unlinktask'){find('tasks',id).ref='';save();render();}
+  else if(a==='mktask'){const it=find(k,id),n=it.notes[+b.dataset.i];if(!n||n.task)return;const tx=n.x.replace(/\s+/g,' ').trim();const tk={id:uid(),title:tx.length>140?tx.slice(0,137)+'...':tx,status:stOf('tasks','open'),priority:'Medium',due:'',ref:it.ref||'',notes:[{t:stamp(),x:'From a note on '+(it.ref?it.ref+' ':'')+(it.title||'Untitled')+': '+tx}]};S.tasks.unshift(tk);n.task=tk.id;save();render();}
+  else if(a==='cancel'){pend='';render();}
+  else if(a==='note'){const t=document.getElementById('n-'+id),v=t.value.trim();if(!v)return;
+    const it=find(k,id);(it.notes=it.notes||[]).push({t:stamp(),x:v});save();render();}
+  else if(a==='delnote'){find(k,id).notes.splice(+b.dataset.i,1);save();render();}
+  else if(a==='action'){const t=document.getElementById('a-'+id),v=t.value.trim();if(!v)return;
+    const m=find('meetings',id);S.tasks.unshift({id:uid(),title:v,status:stOf('tasks','open'),priority:'Medium',due:'',ref:'',notes:[{t:stamp(),x:'From meeting: '+(m.title||'Untitled')+(m.date?' ('+fmtD(m.date)+')':'')}]});
+    (m.notes=m.notes||[]).push({t:stamp(),x:'Action item → task: '+v});save();render();}
+});
+document.addEventListener('input',e=>{
+  const t=e.target;
+  if(t.id==='q'){q=t.value.toLowerCase();schedule();}
+  else if(t.dataset.f==='steps'||t.dataset.f==='desc'){const it=find(t.dataset.k,t.dataset.id);it[t.dataset.f]=t.value;it.upd=stamp();save();}
+  else if(t.dataset.live){const it=find(t.dataset.k,t.dataset.id);it[t.dataset.f]=+t.value;document.getElementById('pv-'+it.id).textContent=t.value;save();}
+});
+
+document.addEventListener('change',e=>{
+  const t=e.target;
+  if(t.id==='sd'){showDone=t.checked;render();return;}
+  if(t.id==='tf'){tagF=t.value;render();return;}
+  if(t.id==='sf'){srt[tab]=t.value;render();return;}
+  if(t.dataset.stn||t.dataset.stc||t.dataset.stk){const ty=t.dataset.stn||t.dataset.stc||t.dataset.stk,i=+t.dataset.i,s=SS(ty)[i];if(s){if(t.dataset.stn){const nw=t.value.trim();if(nw&&!SS(ty).some((o,j)=>j!==i&&o.n===nw)){S[ty].forEach(x=>{if(x.status===s.n)x.status=nw});s.n=nw;}}else if(t.dataset.stc)s.c=t.value;else s.k=t.value;save();}render();return;}
+  if(t.dataset.tagold!==undefined){const old=t.dataset.tagold,nw=t.value.trim().replace(/^#/,'');if(nw&&nw!==old){['tickets','tasks','meetings','playbook'].forEach(kk=>S[kk].forEach(x=>{if((x.tags||[]).includes(old))x.tags=[...new Set(x.tags.map(g=>g===old?nw:g))]}));save();}render();return;}
+  if(t.dataset.linktask){const tk=find('tasks',t.value),tt=find('tickets',t.dataset.linktask);if(tk&&tt){tk.ref=tt.ref;save();}render();return;}
+  if(t.dataset.pbadd){if(t.value){const tt=find('tickets',t.dataset.pbadd);(tt.pb=tt.pb||[]).push({id:t.value,st:'To try'});save();}render();return;}
+  if(t.dataset.pbt){const tt=find('tickets',t.dataset.pbt),x=(tt.pb||[]).find(y=>y.id===t.dataset.pbid);if(x){x.st=t.value;x.at=stamp();const pbe=find('playbook',t.dataset.pbid);if(pbe)pbe.upd=stamp();save();}render();return;}
+  if(!t.dataset.f||t.dataset.live||t.dataset.f==='steps'||t.dataset.f==='desc')return;
+  if(t.type==='date'){const y=+(t.value||'').slice(0,4);if(!t.value||(y>=1900&&y<=2200)){const it=find(t.dataset.k,t.dataset.id);it[t.dataset.f]=t.value;touch(it,t.dataset.k);save();dirty=true;}return;}
+  const it=find(t.dataset.k,t.dataset.id);it[t.dataset.f]=t.dataset.f==='tags'?t.value.split(',').map(s=>s.trim().replace(/^#/,'')).filter(Boolean):t.value;
+  touch(it,t.dataset.k);save();schedule();
+});
+
+const rsp=document.getElementById('rsp');let ld=0;
+document.getElementById('rs').onclick=()=>{rsp.hidden=!rsp.hidden;};
+document.getElementById('rsn').onclick=()=>{rsp.hidden=true;};
+document.addEventListener('focusout',e=>{setTimeout(()=>{if(!dirty)return;const a=document.activeElement;if(a&&a.dataset&&a.dataset.f)return;dirty=false;rerender();},0);});
+let DL=null,snooze=false;const LB='worktracker.lastbackup';
+const lastBk=()=>{try{return localStorage.getItem(LB)||''}catch(e){return ''}};
+function banner(){const el=document.getElementById('bkn'),has=S.tickets.length+S.tasks.length+S.meetings.length+S.playbook.length>0,lb=lastBk();if(!has||snooze||lb===today()){el.hidden=true;return;}el.hidden=false;document.getElementById('bkm').textContent=lb?'Your last download was '+fmtD(lb)+'. Save today\u2019s copy of the app?':'You haven\u2019t downloaded a copy of the app yet. Save one now?';}
+document.getElementById('bkd').onclick=function(){dlApp(this)};
+document.getElementById('bkx').onclick=()=>{snooze=true;banner();};
+(async()=>{try{if(window.claude&&claude.use)DL=await claude.use('downloads');}catch(e){}banner();})();
+document.getElementById('rsy').onclick=()=>{S={tickets:[],tasks:[],meetings:[],playbook:S.playbook||[],settings:S.settings,summary:S.summary||{}};open={};tagF='';pend='';q='';save();rsp.hidden=true;render();};
+
+function parseCSV(s){s=s.replace(/^\uFEFF/,'');const first=s.split(/\r?\n/)[0]||'';const d=first.includes('\t')?'\t':(first.split(';').length>first.split(',').length?';':',');const rows=[];let r=[],c='',q=false;for(let i=0;i<s.length;i++){const ch=s[i];if(q){if(ch==='"'){if(s[i+1]==='"'){c+='"';i++}else q=false}else c+=ch}else if(ch==='"')q=true;else if(ch===d){r.push(c);c=''}else if(ch==='\n'||ch==='\r'){if(ch==='\r'&&s[i+1]==='\n')i++;r.push(c);c='';rows.push(r);r=[]}else c+=ch}if(c||r.length){r.push(c);rows.push(r)}return rows.filter(x=>x.some(v=>v.trim()))}
+function pd(v){v=(v||'').trim();let m=/^(\d{4})-(\d{1,2})-(\d{1,2})/.exec(v);if(m)return `${m[1]}-${m[2].padStart(2,'0')}-${m[3].padStart(2,'0')}`;m=/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})/.exec(v);if(m){let y=m[3];if(y.length===2)y='20'+y;return `${y}-${m[1].padStart(2,'0')}-${m[2].padStart(2,'0')}`}return ''}
+function doImport(txt){const rows=parseCSV(txt||'');if(rows.length<2)return 'Add a header row and at least one ticket.';
+const h=rows[0].map(x=>x.toLowerCase().replace(/[^a-z0-9]/g,''));
+const ix=a=>h.findIndex(x=>a.includes(x));
+const c={ref:ix(['ticket','ticketnumber','ticketno','ticketid','number','id','key','ref','incident','case','caseid']),title:ix(['title','summary','subject','shortdescription','name']),status:ix(['status','state']),pri:ix(['priority','severity']),tags:ix(['tags','tag','labels','category']),notes:ix(['notes','note','description','details','comments']),link:ix(['link','url','ticketlink','ticketurl','href']),created:ix(['created','createddate','datecreated','opened','openedat','dateopened','creationdate','submitted']),assigned:ix(['assigned','assigneddate','dateassigned','assignedon','assignedat']),campus:ix(['campus','location','site','institution','department'])};
+if(c.title<0&&c.ref<0)return 'No Title or Ticket # column found in the header row.';
+const g=(r,i)=>i<0?'':(r[i]||'').trim(),have=new Set(S.tickets.map(t=>t.ref).filter(Boolean)),add=[];let skip=0;
+for(const r of rows.slice(1)){const ref=g(r,c.ref),title=g(r,c.title);if(!ref&&!title)continue;if(ref&&have.has(ref)){skip++;continue}if(ref)have.add(ref);
+const sv=g(r,c.status).toLowerCase(),pv=g(r,c.pri).toLowerCase(),nt=g(r,c.notes);
+const nm=SS('tickets').find(s=>s.n.toLowerCase()===sv);const status=nm?nm.n:/done|clos|resolv|complet|fixed/.test(sv)?stOf('tickets','done'):/block|hold|wait|pend/.test(sv)?(SS('tickets').find(s=>/block/i.test(s.n))||{n:stOf('tickets','open')}).n:/progress|work|active|doing/.test(sv)?stOf('tickets','active'):stOf('tickets','open');
+const priority=/high|crit|urgent|p1|^1/.test(pv)?'High':/low|p4|p5|^4|^5/.test(pv)?'Low':'Medium';
+add.push({id:uid(),ref,title,status,priority,camps:camKeys(g(r,c.campus)),upd:stamp(),created:pd(g(r,c.created))||today(),assigned:pd(g(r,c.assigned))||pd(g(r,c.created))||today(),link:g(r,c.link),tags:g(r,c.tags).split(/[,;|]/).map(s=>s.trim()).filter(Boolean),notes:nt?[{t:stamp(),x:nt}]:[]});}
+if(!add.length)return skip?`Nothing new: ${skip} already in your tracker.`:'No tickets found.';
+S.tickets=[...add,...S.tickets];tab='tickets';q='';tagF='';save();render();imt.value='';imf.value='';
+return `Imported ${add.length} ticket${add.length>1?'s':''}`+(skip?`, skipped ${skip} already in your tracker.`:'.');}
+const imp=document.getElementById('imp'),imt=document.getElementById('imt'),imf=document.getElementById('imf'),imm=document.getElementById('imm');
+let impK='';
+const IMPH={tickets:'Choose a CSV file (in Excel, use Save As, CSV), or paste rows with a header line. Recognized columns: Ticket # (or ID, Key, Number), Title (or Summary), Status, Priority, Created (or Opened), Assigned, Link (or URL), Tags, Notes (or Description). Tickets whose number is already in your tracker are skipped.',meetings:'Choose a CSV file (calendar exports work), or paste rows with a header line. Recognized columns: Title (or Subject), Date (or Start Date), Status, Attendees, Tags, Notes (or Description, Agenda). Meetings with the same title and date already in your tracker are skipped.'};
+function openImp(k){const same=!imp.hidden&&impK===k;impK=k;rsp.hidden=true;imp.hidden=same;imm.textContent='';imt.value='';imf.value='';document.getElementById('impt').textContent='Import '+k;document.getElementById('imph').textContent=IMPH[k];window.scrollTo(0,0);}
+function doImportM(txt){const rows=parseCSV(txt||'');if(rows.length<2)return 'Add a header row and at least one meeting.';
+const h=rows[0].map(x=>x.toLowerCase().replace(/[^a-z0-9]/g,''));const ix=a=>h.findIndex(x=>a.includes(x));
+const c={title:ix(['title','meeting','meetingname','subject','name','summary','event']),date:ix(['date','meetingdate','startdate','start','when','scheduled','startdatetime']),status:ix(['status']),who:ix(['attendees','attendee','requiredattendees','participants','who','invitees','people']),tags:ix(['tags','tag','labels','category']),notes:ix(['notes','note','description','agenda','minutes','comments'])};
+if(c.title<0)return 'No Title (or Subject) column found in the header row.';
+const g=(r,i)=>i<0?'':(r[i]||'').trim(),key=m=>(m.title||'').toLowerCase()+'|'+(m.date||''),have=new Set(S.meetings.map(key)),add=[];let skip=0;
+for(const r of rows.slice(1)){const title=g(r,c.title);if(!title)continue;const m={id:uid(),title,date:pd(g(r,c.date)),who:g(r,c.who),tags:g(r,c.tags).split(/[,;|]/).map(s=>s.trim()).filter(Boolean)};const sv=g(r,c.status).toLowerCase();const nm=SS('meetings').find(s=>s.n.toLowerCase()===sv);m.status=nm?nm.n:/cancel/.test(sv)?(SS('meetings').find(s=>/cancel/i.test(s.n))||{n:stOf('meetings','done')}).n:/done|complet|held|attend/.test(sv)?stOf('meetings','done'):stOf('meetings','open');const nt=g(r,c.notes);m.notes=nt?[{t:stamp(),x:nt}]:[];if(have.has(key(m))){skip++;continue}have.add(key(m));add.push(m);}
+if(!add.length)return skip?`Nothing new: ${skip} already in your tracker.`:'No meetings found.';
+S.meetings=[...add,...S.meetings];tab='meetings';q='';tagF='';save();render();imt.value='';imf.value='';
+return `Imported ${add.length} meeting${add.length>1?'s':''}`+(skip?`, skipped ${skip} already in your tracker.`:'.');}
+document.getElementById('imn').onclick=()=>{imp.hidden=true;};
+imf.onchange=()=>{const f=imf.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{imt.value=String(rd.result);imm.textContent='File loaded. Click Import.'};rd.onerror=()=>{imm.textContent='Could not read that file.'};rd.readAsText(f)};
+document.getElementById('imy').onclick=()=>{imm.textContent=impK==='meetings'?doImportM(imt.value):doImport(imt.value);};
+
+/* ============ shared helpers: download, rich text, campus, filters, summary ============ */
+function dl(name,mime,data){try{const b=new Blob([data],{type:mime});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(u);a.remove()},1500);return true}catch(e){return false}}
+
+function appHTML(){
+ const c=document.documentElement.cloneNode(true);
+ const n=c.querySelector('#nav'),m=c.querySelector('#main');
+ if(n)n.innerHTML='';if(m)m.innerHTML='';
+ ['rsp','bkn','imp'].forEach(id=>{const el=c.querySelector('#'+id);if(el)el.setAttribute('hidden','')});
+ const lk=c.querySelector('#lock');if(lk){lk.classList.add('lock');lk.classList.remove('on');lk.removeAttribute('style')}
+ const pw=c.querySelector('#pw');if(pw){pw.removeAttribute('value')}
+ const pe=c.querySelector('#pwerr');if(pe){pe.classList.remove('on');pe.removeAttribute('style')}
+ const sd=c.querySelector('#seed');
+ if(sd)sd.textContent=JSON.stringify(S).replace(/</g,'\\u003c');
+ c.removeAttribute('data-theme');
+ return '<!DOCTYPE html>\n'+c.outerHTML;
+}
+async function dlApp(btn){
+ const name='work-tracker-'+today()+'.html';
+ let h;
+ try{h=appHTML()}catch(e){if(btn)btn.textContent='Could not build file';return}
+ let ok=false;
+ try{if(DL){await DL.save({filename:name,data:h});ok=true}}catch(e){}
+ if(!ok)ok=dl(name,'text/html;charset=utf-8',h);
+ if(btn){const t=btn.textContent;btn.textContent=ok?'Downloaded — your data is inside':'Download blocked by browser';setTimeout(()=>{btn.textContent=t},2600)}
+ if(ok){try{localStorage.setItem(LB,today())}catch(e){}banner()}
+}
+
+/* ---- focus-safe rendering ---- */
+function fkey(el){if(!el||!el.dataset)return null;if(el.dataset.f&&el.dataset.id)return 'f|'+(el.dataset.k||'')+'|'+el.dataset.id+'|'+el.dataset.f;if(el.id)return 'i|'+el.id;return null}
+function fnode(k){if(!k)return null;const p=k.split('|');if(p[0]==='i')return document.getElementById(p[1]);return document.querySelector('[data-k="'+p[1]+'"][data-id="'+p[2]+'"][data-f="'+p[3]+'"]')}
+let _raf=0;
+function rerender(){const el=document.activeElement,k=fkey(el);let s=null,e=null;try{s=el.selectionStart;e=el.selectionEnd}catch(x){}
+  render();
+  if(k){const n=fnode(k);if(n&&n!==document.activeElement){n.focus({preventScroll:true});try{if(s!=null)n.setSelectionRange(s,e)}catch(x){}}}}
+function schedule(){if(_raf)return;_raf=requestAnimationFrame(()=>{_raf=0;rerender()})}
+function touch(it,k){it.upd=stamp();if(k&&it.status!==undefined){if(isDone(k,it)){if(!it.doneAt)it.doneAt=today()}else it.doneAt=''}}
+
+/* ---- TeamDynamix links ---- */
+const TDX='https://utk.teamdynamix.com/TDNext/Apps/2278/Tickets/TicketDet?TicketID=';
+const tdxNo=it=>{const m=/(\d{3,})/.exec(String(it.ref||''));return m?m[1]:''};
+const tdxUrl=it=>{const n=tdxNo(it);return n?TDX+n:safeUrl(it.link)};
+
+/* ---- rich text ---- */
+const _num=/^(\d+)[.)]\s+/;
+function inl(s){let t=esc(s);
+ t=t.replace(/(https?:\/\/[^\s<"')]+)/g,'<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
+ t=t.replace(/\*\*([^*\n]+)\*\*/g,'<b>$1</b>');
+ t=t.replace(/(^|[\s(])_([^_\n]+)_/g,'$1<i>$2</i>');
+ t=t.replace(/`([^`\n]+)`/g,'<code>$1</code>');
+ return t}
+function rich(s){const st=[];return (s||'').split('\n').map(l=>{
+  if(!l.trim())return '<div style="height:6px"></div>';
+  const w=(/^[ \t]*/.exec(l)[0]).replace(/\t/g,'    ').length;
+  while(st.length&&st[st.length-1]>w)st.pop();
+  if(!st.length||st[st.length-1]<w)st.push(w);
+  const d=st.length-1;let t=l.trim();
+  const nm=_num.exec(t);const b=bul.test(t);
+  t=t.replace(bul,'').replace(_num,'');
+  const mark=nm?nm[1]+'.':(b?(d%2?'◦':'•'):'');
+  return '<div class="ol" style="margin-left:'+(d*18)+'px">'+(mark?'<span class="bl">'+mark+'</span>':'')+'<span>'+inl(t)+'</span></div>'}).join('')}
+const TBB=[['• List','bullet'],['1. List','num'],['⇥ Indent','in'],['⇤ Outdent','out'],['B','b'],['I','i']];
+const tbar=id=>'<div class="tb">'+TBB.map(([l,m])=>'<button type="button" data-act="fmt" data-t="'+id+'" data-m="'+m+'" title="'+esc(l)+'">'+esc(l)+'</button>').join('')+'<span style="color:var(--mut);font-size:11px;align-self:center;margin-left:4px">Tab indents a bullet line</span></div>';
+function fmt(ta,m){if(!ta)return;const v=ta.value;let s=ta.selectionStart,e=ta.selectionEnd;
+ if(m==='b'||m==='i'){const w=m==='b'?'**':'_';const sel=v.slice(s,e)||(m==='b'?'bold':'italic');ta.setRangeText(w+sel+w,s,e,'end');}
+ else{let ls=v.lastIndexOf('\n',s-1)+1,le=v.indexOf('\n',e);if(le<0)le=v.length;
+  const lines=v.slice(ls,le).split('\n').map((l,i)=>{
+   const ind=/^[ \t]*/.exec(l)[0],body=l.slice(ind.length);
+   if(m==='bullet')return ind+(bul.test(body)?body.replace(bul,''):'• '+body);
+   if(m==='num')return ind+(_num.test(body)?body.replace(_num,''):(i+1)+'. '+body);
+   if(m==='in')return '   '+l;
+   return l.replace(/^(\t|   ?|    )/,'')});
+  ta.setRangeText(lines.join('\n'),ls,le,'end');}
+ ta.focus();ta.dispatchEvent(new Event('input',{bubbles:true}));ta.dispatchEvent(new Event('change',{bubbles:true}));}
+
+/* ---- campuses ---- */
+const DEFCAMP=[
+ {k:'UTK',n:'Knoxville',c:'#FF8200',e:'\ud83d\udc3e'},
+ {k:'UTHSC',n:'Health Science Center',c:'#2E7FA6',e:'\u2695\ufe0f'},
+ {k:'UTC',n:'Chattanooga',c:'#C8A20B',e:'\ud83d\udc26'},
+ {k:'UTM',n:'Martin',c:'#2B6CB0',e:'\ud83e\udd85'},
+ {k:'UTSI',n:'Space Institute',c:'#7A5AF8',e:'\ud83d\ude80'},
+ {k:'UTS',n:'Southern',c:'#C2410C',e:'\ud83d\udd25'},
+ {k:'UTIA',n:'Institute of Agriculture',c:'#2F8F56',e:'\ud83c\udf3f'},
+ {k:'UTSYS',n:'System Administration',c:'#8B5CF6',e:'\ud83c\udfdb\ufe0f'},
+ {k:'ORNL',n:'Oak Ridge National Lab',c:'#0E9488',e:'\u269b\ufe0f'},
+ {k:'OTHER',n:'Remote / Other',c:'#8A8A85',e:'\ud83c\udf10'}];
+const CAMPUSES=()=>(S.settings.campuses||[]);
+const camObj=k=>CAMPUSES().find(c=>c.k===k)||{k:k,n:k,c:'#8A8A85',e:'\ud83d\udccd'};
+const camList=x=>Array.isArray(x.camps)?x.camps.filter(Boolean):(x.campus?[String(x.campus)]:[]);
+const camTxt=x=>camList(x).join(', ');
+const camKeys=s=>String(s||'').split(/[,;|\/]/).map(x=>x.trim()).filter(Boolean)
+  .map(x=>{const m=CAMPUSES().find(c=>c.k.toLowerCase()===x.toLowerCase()||c.n.toLowerCase()===x.toLowerCase()||('ut '+c.n).toLowerCase()===x.toLowerCase());return m?m.k:x})
+  .filter((v,i,a)=>a.indexOf(v)===i);
+function migCamp(){
+ let cs=S.settings.campuses;
+ if(!Array.isArray(cs)||!cs.length||typeof cs[0]==='string'){
+  const old=Array.isArray(cs)?cs.filter(x=>typeof x==='string'):[];
+  const out=DEFCAMP.map(x=>Object.assign({},x));
+  old.forEach(o=>{const t=o.trim();if(!t)return;
+   if(out.some(c=>c.n.toLowerCase()===t.toLowerCase()||c.k.toLowerCase()===t.toLowerCase()||('ut '+c.n).toLowerCase()===t.toLowerCase()))return;
+   out.push({k:t.replace(/[^A-Za-z0-9]/g,'').slice(0,6).toUpperCase()||'CAMP',n:t,c:'#8A8A85',e:'\ud83d\udccd'})});
+  S.settings.campuses=out;
+ }
+ S.settings.campuses.forEach(c=>{if(!c.c)c.c='#8A8A85';if(c.e===undefined)c.e=''});
+ let ch=false;
+ ['tickets','tasks','meetings'].forEach(k=>S[k].forEach(x=>{
+  if(!Array.isArray(x.camps)){x.camps=x.campus?camKeys(x.campus):[];ch=true}
+  if(x.campus!==undefined){delete x.campus;ch=true}}));
+ if(ch)save();
+}
+migCamp();
+const camsel=(k,it)=>{const sel=camList(it);return '<div style="grid-column:1/-1"><label>Campus <span style="opacity:.7">(pick one or more)</span></label><div class="camwrap">'+CAMPUSES().map(c=>'<button type="button" class="camchip'+(sel.includes(c.k)?' on':'')+'" style="--cc:'+esc(c.c)+'" data-act="camtog" data-k="'+k+'" data-id="'+it.id+'" data-c="'+esc(c.k)+'" title="'+esc(c.n)+'">'+(c.e?c.e+' ':'')+esc(c.k)+'</button>').join('')+(CAMPUSES().length?'':'<span class="empty">Add campuses in Settings.</span>')+'</div></div>'};
+const campill=it=>camList(it).map(k=>{const c=camObj(k);return '<span class="pill cam" style="--cc:'+esc(c.c)+'" title="'+esc(c.n)+'">'+(c.e?c.e+' ':'')+esc(c.k)+'</span>'}).join('');
+
+/* ---- filters ---- */
+const FDEF=()=>({st:'',pri:'',cam:'',from:'',to:'',over:false,kind:''});
+let flt={tickets:FDEF(),tasks:FDEF(),meetings:FDEF()};
+const dfield=k=>k==='tickets'?'created':k==='tasks'?'due':'date';
+const anyF=f=>!!(f.st||f.pri||f.cam||f.from||f.to||f.over||f.kind);
+function passF(k,x){const f=flt[k];if(!f)return true;
+ if(f.st&&x.status!==f.st)return false;
+ if(f.pri&&(x.priority||'')!==f.pri)return false;
+ if(f.cam){const cl=camList(x);if(f.cam==='_none'?cl.length>0:!cl.includes(f.cam))return false}
+ if(f.kind&&kindOf(k,x.status)!==f.kind)return false;
+ const d=(x[dfield(k)]||'').slice(0,10);
+ if(f.from&&(!d||d<f.from))return false;
+ if(f.to&&(!d||d>f.to))return false;
+ if(f.over&&!(x.due&&!isDone(k,x)&&x.due<today()))return false;
+ return true}
+function fbar(k){const f=flt[k];if(!f)return '';const cs=CAMPUSES();
+ const dl2={tickets:'Created',tasks:'Due',meetings:'Date'}[k];
+ return '<div class="fbar">'+
+ '<select data-flt="'+k+'" data-ff="st"><option value="">Any status</option>'+SS(k).map(s=>'<option'+(s.n===f.st?' selected':'')+'>'+esc(s.n)+'</option>').join('')+'</select>'+
+ (k!=='meetings'?'<select data-flt="'+k+'" data-ff="pri"><option value="">Any priority</option>'+PR.map(p=>'<option'+(p===f.pri?' selected':'')+'>'+p+'</option>').join('')+'</select>':'')+
+ '<select data-flt="'+k+'" data-ff="cam"><option value="">Any campus</option>'+cs.map(c=>'<option value="'+esc(c.k)+'"'+(c.k===f.cam?' selected':'')+'>'+esc(c.k)+' — '+esc(c.n)+'</option>').join('')+'<option value="_none"'+(f.cam==='_none'?' selected':'')+'>(no campus)</option></select>'+
+ '<span style="color:var(--mut);font-size:12px">'+dl2+'</span><input type="date" data-flt="'+k+'" data-ff="from" value="'+esc(f.from)+'" title="From"><input type="date" data-flt="'+k+'" data-ff="to" value="'+esc(f.to)+'" title="To">'+
+ (k!=='meetings'?'<label style="display:flex;align-items:center;gap:4px;margin:0;font-size:12px;color:var(--mut)"><input type="checkbox" style="width:auto" data-flt="'+k+'" data-ff="over"'+(f.over?' checked':'')+'> Overdue only</label>':'')+
+ (f.kind?'<span class="chip" data-act="clrkind" data-k="'+k+'">'+(KINDS.find(x=>x[0]===f.kind)||['',''])[1]+' ✕</span>':'')+
+ (anyF(f)?'<button class="btn" data-act="clrflt" data-k="'+k+'">Clear filters</button>':'')+
+ '</div>'}
+
+/* ---- CSV export ---- */
+const csvq=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';
+function exportCSV(k){const rows=visible(k);
+ const cols={tickets:['ref','title','status','priority','campus','created','assigned','due','tags','link','notes'],tasks:['title','ref','status','priority','campus','due','tags','notes'],meetings:['title','date','status','campus','who','tags','notes'],playbook:['title','ref','tags','steps','notes']}[k];
+ const head={ref:'Ticket #',title:'Title',status:'Status',priority:'Priority',campus:'Campus',created:'Created',assigned:'Assigned',due:'Due',date:'Date',tags:'Tags',link:'Link',who:'Attendees',steps:'Steps',notes:'Notes'};
+ const val=(x,c)=>c==='campus'?camTxt(x):c==='tags'?(x.tags||[]).join('; '):c==='notes'?(x.notes||[]).map(n=>fmtT(n.t)+': '+n.x).join(' | '):c==='link'?(k==='tickets'?tdxUrl(x):x.link||''):(x[c]||'');
+ const csv=[cols.map(c=>csvq(head[c]||c)).join(',')].concat(rows.map(x=>cols.map(c=>csvq(val(x,c))).join(','))).join('\r\n');
+ dl(k+'-'+today()+'.csv','text/csv;charset=utf-8','\uFEFF'+csv)}
+function visible(k){let a=S[k].filter(x=>(showDone||!isDone(k,x))&&(!q||JSON.stringify(x).toLowerCase().includes(q))&&(!tagF||(x.tags||[]).includes(tagF))&&passF(k,x));
+ const sf=SORTS[k][srt[k]||Object.keys(SORTS[k])[0]];if(sf)a.sort(sf);return a}
+
+/* ============ weekly summary ============ */
+const SECS=[['worked','What have you worked on during the past week?','Finished items, anything you added a note to, and new work that landed on you.'],
+ ['plan','What is the plan for next week?','In-progress and high-priority work, tasks due in the next 7 days, meetings already on the calendar.'],
+ ['help','Do you need any help? Please provide details.','Blocked or waiting items, anything tagged #help, and open work with no activity for 14+ days.'],
+ ['learned','What have you learned this past week?','Playbook entries you marked Fixed it or Partial fix, plus playbook notes added this week.'],
+ ['want','What would you like to learn?','Playbook entries still on To try / Trying.'],
+ ['extra','Additional comments','']];
+let wkOff=0;
+function wkStart(o){const d=now();const dow=(d.getDay()+6)%7;d.setDate(d.getDate()-dow+o*7);return d.toISOString().slice(0,10)}
+const addD=(s,n)=>new Date(new Date(s+'T00:00:00').getTime()+n*864e5).toISOString().slice(0,10);
+function wkS(){S.summary=S.summary||{};const a=wkStart(wkOff);if(!S.summary[a])S.summary[a]={off:{},txt:{}};return S.summary[a]}
+const inR=(d,a,b)=>{d=(d||'').slice(0,10);return !!d&&d>=a&&d<=b};
+const nIn=(x,a,b)=>(x.notes||[]).filter(n=>inR(n.t,a,b)).map(n=>n.x);
+const lastAct=x=>[x.upd,x.doneAt,...(x.notes||[]).map(n=>n.t),x.assigned,x.created,x.due,x.date].filter(Boolean).map(s=>String(s).slice(0,10)).sort().pop()||'';
+
+function collect(){
+ const a=wkStart(wkOff),b=addD(a,6),na=addD(a,7),nb=addD(a,13);
+ const R={worked:[],plan:[],help:[],learned:[],want:[]};
+ const L=t=>(t.ref?t.ref+' – ':'')+(t.title||'Untitled');
+ S.tickets.forEach(t=>{
+  const ns=nIn(t,a,b),done=inR(t.doneAt,a,b),made=inR(t.created,a,b)||inR(t.assigned,a,b),up=inR(t.upd,a,b);
+  if(done||ns.length||made||up)R.worked.push({k:'w'+t.id,lab:L(t),meta:(done?'Closed':(made?'New this week':'Worked'))+(camTxt(t)?' · '+camTxt(t):''),sub:ns,go:['tickets',t.id]});
+  if(!isDone('tickets',t)&&(kindOf('tickets',t.status)==='active'||t.priority==='High'))R.plan.push({k:'p'+t.id,lab:L(t),meta:t.status+(t.priority==='High'?' · High':''),sub:[],go:['tickets',t.id]});
+  const bl=/block|hold|wait|pend|escalat/i.test(t.status||'')||(t.tags||[]).some(g=>/^(help|stuck|escalate|question)$/i.test(g));
+  const st=!isDone('tickets',t)&&lastAct(t)&&lastAct(t)<addD(a,-14);
+  if(!isDone('tickets',t)&&(bl||st))R.help.push({k:'h'+t.id,lab:L(t),meta:bl?(t.status||'Needs help'):'No activity since '+fmtD(lastAct(t)),sub:ns.slice(-1),go:['tickets',t.id]});
+ });
+ S.tasks.forEach(t=>{
+  const ns=nIn(t,a,b),done=inR(t.doneAt,a,b);
+  if(done||ns.length)R.worked.push({k:'wt'+t.id,lab:(t.ref?t.ref+' – ':'')+(t.title||'Untitled'),meta:done?'Task completed':'Task in progress',sub:ns,go:['tasks',t.id]});
+  if(!isDone('tasks',t)&&t.due&&t.due>=a&&t.due<=nb)R.plan.push({k:'pt'+t.id,lab:(t.title||'Untitled'),meta:'Task due '+fmtD(t.due),sub:[],go:['tasks',t.id]});
+  const bl=/block|hold|wait/i.test(t.status||'')||(t.tags||[]).some(g=>/^(help|stuck|escalate|question)$/i.test(g));
+  if(!isDone('tasks',t)&&bl)R.help.push({k:'ht'+t.id,lab:(t.title||'Untitled'),meta:t.status,sub:[],go:['tasks',t.id]});
+ });
+ S.meetings.forEach(m=>{
+  if(inR(m.date,a,b)&&!/cancel/i.test(m.status||''))R.worked.push({k:'wm'+m.id,lab:'Meeting: '+(m.title||'Untitled'),meta:fmtD(m.date)+(m.who?' · '+m.who:''),sub:nIn(m,a,b),go:['meetings',m.id]});
+  if(m.date&&m.date>=na&&m.date<=nb&&!/cancel/i.test(m.status||''))R.plan.push({k:'pm'+m.id,lab:'Meeting: '+(m.title||'Untitled'),meta:fmtD(m.date),sub:[],go:['meetings',m.id]});
+ });
+ S.playbook.forEach(p=>{
+  const links=S.tickets.flatMap(t=>(t.pb||[]).filter(x=>x.id===p.id).map(x=>({t,x})));
+  const fixed=links.filter(({x})=>/Fixed|Partial/.test(x.st)&&(inR(x.at,a,b)||!x.at&&inR(p.upd,a,b)));
+  const ns=nIn(p,a,b);
+  if(fixed.length||ns.length)R.learned.push({k:'l'+p.id,lab:p.title||'Untitled',meta:fixed.length?fixed[0].x.st+' on '+fixed.map(({t})=>t.ref||t.title).filter(Boolean).join(', '):'Playbook notes added',sub:ns,go:['playbook',p.id]});
+  const openL=links.filter(({x})=>/To try|Trying/.test(x.st));
+  if(openL.length||(p.tags||[]).some(g=>/^(learn|training|todo-learn)$/i.test(g)))R.want.push({k:'v'+p.id,lab:p.title||'Untitled',meta:openL.length?openL[0].x.st+(openL[0].t.ref?' on '+openL[0].t.ref:''):'Tagged to learn',sub:[],go:['playbook',p.id]});
+ });
+ return R}
+
+function sumUI(){
+ const a=wkStart(wkOff),b=addD(a,6),R=collect(),s=wkS();
+ const hdr='<div class="wk"><button class="btn" data-act="wk" data-d="-1">◀ Previous</button><b style="flex:1;min-width:180px;text-align:center">'+fmtD(a)+' – '+fmtD(b)+(wkOff===0?' (this week)':'')+'</b><button class="btn" data-act="wk" data-d="1">Next ▶</button><button class="btn" data-act="wk" data-d="0">This week</button></div>';
+ const body=SECS.map(([id,title,hint])=>{
+  const items=R[id]||[];
+  return '<div class="sec"><h3>'+esc(title)+'</h3>'+(hint?'<div style="color:var(--mut);font-size:12px;margin-bottom:6px">'+esc(hint)+'</div>':'')+
+   (items.length?items.map(it=>'<div class="si"><input type="checkbox" data-sum="'+id+'" data-key="'+it.k+'"'+(s.off[it.k]?'':' checked')+'><div class="t"><span data-act="goto" data-k="'+it.go[0]+'" data-id="'+it.go[1]+'" style="cursor:pointer">'+esc(it.lab)+'</span><small>'+esc(it.meta)+'</small>'+(it.sub.length?'<div style="margin-top:2px">'+it.sub.map(x=>'<div class="ol" style="margin-left:10px"><span class="bl">•</span><span>'+inl(x)+'</span></div>').join('')+'</div>':'')+'</div></div>').join(''):(id==='extra'?'':'<div class="empty">Nothing found for this week — add your own below.</div>'))+
+   '<label style="margin-top:8px">Your own words'+(items.length?' (added after the items above)':'')+'</label>'+tbar('sx-'+id)+'<textarea class="rt" id="sx-'+id+'" data-sumtxt="'+id+'" placeholder="Type anything the tracker can\u2019t know…">'+esc(s.txt[id]||'')+'</textarea></div>'}).join('');
+ const out='<div class="sec"><h3>Preview</h3><div class="pv">'+esc(buildTxt())+'</div><div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn p" data-act="sumword">Export Word (.doc)</button><button class="btn" data-act="sumdoc">Download .txt</button><button class="btn" data-act="sumcopy">Copy</button><button class="btn" data-act="sumhtml">Download .html</button><span id="summsg" style="color:var(--mut);align-self:center"></span></div></div>';
+ return hdr+body+out}
+
+function pick(){const s=wkS(),R=collect(),o={};SECS.forEach(([id])=>{o[id]={items:(R[id]||[]).filter(it=>!s.off[it.k]),txt:(s.txt[id]||'').trim()}});return o}
+function buildTxt(){const a=wkStart(wkOff),b=addD(a,6),p=pick();
+ let t='Weekly summary — '+fmtD(a)+' to '+fmtD(b)+'\n';
+ SECS.forEach(([id,title])=>{t+='\n'+title+'\n';
+  const L=[];
+  p[id].items.forEach(it=>{L.push('  - '+it.lab+(it.meta?' ('+it.meta+')':''));it.sub.forEach(x=>String(x).split('\n').forEach(ln=>{if(ln.trim())L.push('      • '+ln.trim().replace(bul,''))}))});
+  if(p[id].txt)p[id].txt.split('\n').forEach(ln=>{if(ln.trim())L.push('  - '+ln.trim().replace(bul,''))});
+  t+=(L.length?L.join('\n'):'  - Nothing to report.')+'\n'});
+ return t}
+function buildHTML(){const a=wkStart(wkOff),b=addD(a,6),p=pick();
+ let h='<h1 style="font-size:16pt">Weekly summary</h1><p style="color:#555">'+fmtD(a)+' – '+fmtD(b)+'</p>';
+ SECS.forEach(([id,title])=>{h+='<h2 style="font-size:12pt;margin-bottom:4pt">'+esc(title)+'</h2>';
+  const li=[];
+  p[id].items.forEach(it=>{li.push('<li>'+esc(it.lab)+(it.meta?' <span style="color:#666">('+esc(it.meta)+')</span>':'')+(it.sub.length?'<ul>'+it.sub.map(x=>'<li>'+esc(String(x).replace(/\n/g,' ').replace(bul,''))+'</li>').join('')+'</ul>':'')+'</li>')});
+  (p[id].txt||'').split('\n').forEach(ln=>{if(ln.trim())li.push('<li>'+inl(ln.trim().replace(bul,''))+'</li>')});
+  h+=li.length?'<ul>'+li.join('')+'</ul>':'<p style="color:#666">Nothing to report.</p>'});
+ return '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>Weekly summary</title><style>body{font-family:Calibri,Arial,sans-serif;font-size:11pt}h1,h2{font-family:Calibri,Arial,sans-serif}ul{margin-top:2pt}</style></head><body>'+h+'</body></html>'}
+
+/* ---- extra event wiring ---- */
+document.addEventListener('click',e=>{
+ const b=e.target.closest('[data-act]');if(!b)return;const a=b.dataset.act;
+ if(a==='fmt'){fmt(document.getElementById(b.dataset.t),b.dataset.m);}
+ else if(a==='csec'){const key=b.dataset.id+'|'+b.dataset.s;if(csOff[key])delete csOff[key];else csOff[key]=1;rerender();}
+ else if(a==='jump'){const key=b.dataset.id+'|'+b.dataset.s;delete csOff[key];rerender();
+   const el=document.getElementById('cs-'+b.dataset.id+'-'+b.dataset.s);if(el)el.scrollIntoView({block:'start',behavior:'smooth'});}
+ else if(a==='statgo'){const k=b.dataset.k,sf=b.dataset.sf;tab=k;q='';tagF='';open={};flt[k]=FDEF();
+   if(sf==='active')flt[k].kind='active';if(sf==='over')flt[k].over=true;showDone=false;render();window.scrollTo(0,0);}
+ else if(a==='camgo'){tab='tickets';q='';tagF='';open={};flt.tickets=FDEF();flt.tickets.cam=b.dataset.c||'_none';showDone=false;render();window.scrollTo(0,0);}
+ else if(a==='clrflt'){flt[b.dataset.k]=FDEF();render();}
+ else if(a==='clrkind'){flt[b.dataset.k].kind='';render();}
+ else if(a==='csv'){exportCSV(b.dataset.k);}
+ else if(a==='wk'){const d=+b.dataset.d;wkOff=d===0?0:wkOff+d;render();window.scrollTo(0,0);}
+ else if(a==='sumdoc'){dl('weekly-summary-'+wkStart(wkOff)+'.txt','text/plain;charset=utf-8',buildTxt());}
+ else if(a==='sumword'){dl('weekly-summary-'+wkStart(wkOff)+'.doc','application/msword',buildHTML());}
+ else if(a==='sumhtml'){dl('weekly-summary-'+wkStart(wkOff)+'.html','text/html;charset=utf-8',buildHTML());}
+ else if(a==='sumcopy'){const t=buildTxt();const m=document.getElementById('summsg');
+   (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>{if(m)m.textContent='Copied.'},()=>{const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');if(m)m.textContent='Copied.'}catch(x){if(m)m.textContent='Could not copy — use Download.'}ta.remove()});}
+ else if(a==='cpadd'){const ki=document.getElementById('cpnk'),ni=document.getElementById('cpnn');
+   const kk=((ki&&ki.value)||'').trim().toUpperCase(),nn=((ni&&ni.value)||'').trim();
+   if(kk&&!CAMPUSES().some(c=>c.k.toLowerCase()===kk.toLowerCase())){const pal=['#FF8200','#2E7FA6','#C8A20B','#2B6CB0','#7A5AF8','#C2410C','#2F8F56','#8B5CF6','#0E9488'];
+     S.settings.campuses=[...CAMPUSES(),{k:kk,n:nn||kk,c:pal[CAMPUSES().length%pal.length],e:'\ud83d\udccd'}];save()}
+   render();}
+ else if(a==='cpdel'){const c=b.dataset.c;S.settings.campuses=CAMPUSES().filter(x=>x.k!==c);['tickets','tasks','meetings'].forEach(k=>S[k].forEach(x=>{if(Array.isArray(x.camps))x.camps=x.camps.filter(v=>v!==c)}));save();render();}
+ else if(a==='camtog'){const it=find(b.dataset.k,b.dataset.id);if(it){const cur=camList(it),c=b.dataset.c;it.camps=cur.includes(c)?cur.filter(x=>x!==c):cur.concat([c]);touch(it,b.dataset.k);save();rerender();}}
+ else if(a==='cpytxt'){const ta=document.getElementById('rstt');if(ta){ta.value=JSON.stringify(S);ta.select();try{navigator.clipboard.writeText(ta.value)}catch(x){}const m=document.getElementById('rstm');if(m)m.textContent='Copied \u2014 paste it somewhere safe.';}}
+ else if(a==='rst'){const ta=document.getElementById('rstt'),m=document.getElementById('rstm');
+   try{const d=JSON.parse((ta&&ta.value)||'');if(!d.tickets||!d.tasks||!d.meetings)throw 0;
+    if(!ld){ld=1;b.textContent='Click again to replace current data';if(m)m.textContent='';return;}
+    S=Object.assign({playbook:[],settings:S.settings,summary:{}},d);ld=0;if(!S.settings)S.settings=JSON.parse(JSON.stringify(DEF));migCamp();save();render();
+   }catch(e){ld=0;b.textContent='Load from text';if(m)m.textContent='That does not look like saved tracker data.'}}
+ else if(a==='dlapp'){dlApp(b);}
+});
+document.addEventListener('change',e=>{
+ const t=e.target;
+ if(t.dataset.flt){const f=flt[t.dataset.flt];if(f){f[t.dataset.ff]=t.type==='checkbox'?t.checked:t.value;render();}return}
+ if(t.dataset.sum){const s=wkS();if(t.checked)delete s.off[t.dataset.key];else s.off[t.dataset.key]=1;save();schedule();return}
+ if(t.dataset.cpk!==undefined){const i=+t.dataset.cpk,c=CAMPUSES()[i],v=t.value.trim().toUpperCase();
+   if(c&&v&&v!==c.k&&!CAMPUSES().some((o,j)=>j!==i&&o.k.toLowerCase()===v.toLowerCase())){const old=c.k;c.k=v;
+    ['tickets','tasks','meetings'].forEach(k=>S[k].forEach(x=>{if(Array.isArray(x.camps))x.camps=x.camps.map(y=>y===old?v:y)}));
+    ['tickets','tasks','meetings'].forEach(k=>{if(flt[k]&&flt[k].cam===old)flt[k].cam=v});save()}
+   render();return}
+ if(t.dataset.cpn!==undefined){const c=CAMPUSES()[+t.dataset.cpn];if(c){c.n=t.value.trim()||c.k;save()}render();return}
+ if(t.dataset.cpc!==undefined){const c=CAMPUSES()[+t.dataset.cpc];if(c){c.c=t.value;save()}render();return}
+ if(t.dataset.cpe!==undefined){const c=CAMPUSES()[+t.dataset.cpe];if(c){c.e=t.value.trim().slice(0,3);save()}render();return}
+});
+document.addEventListener('input',e=>{
+ const t=e.target;
+ if(t.dataset.sumtxt){const s=wkS();s.txt[t.dataset.sumtxt]=t.value;save();const pv=document.querySelector('.pv');if(pv)pv.textContent=buildTxt();}
+});
+document.addEventListener('keydown',e=>{
+ const t=e.target;if(!t.classList||!t.classList.contains('rt'))return;
+ const v=t.value,s=t.selectionStart,ls=v.lastIndexOf('\n',s-1)+1,line=v.slice(ls,v.indexOf('\n',s)<0?v.length:v.indexOf('\n',s));
+ const body=line.replace(/^[ \t]*/,'');
+ if(e.key==='Tab'&&(bul.test(body)||_num.test(body)||t.dataset.f==='steps')){e.preventDefault();fmt(t,e.shiftKey?'out':'in');return}
+ if(e.key==='Enter'&&!e.shiftKey){const ind=/^[ \t]*/.exec(line)[0];const bm=bul.exec(body),nm=_num.exec(body);
+  if(bm&&body.replace(bul,'').trim()===''){e.preventDefault();t.setRangeText('\n',ls,s,'end');t.dispatchEvent(new Event('input',{bubbles:true}));return}
+  if(bm){e.preventDefault();t.setRangeText('\n'+ind+bm[0],s,t.selectionEnd,'end');t.dispatchEvent(new Event('input',{bubbles:true}));t.dispatchEvent(new Event('change',{bubbles:true}));return}
+  if(nm){e.preventDefault();t.setRangeText('\n'+ind+(+nm[1]+1)+'. ',s,t.selectionEnd,'end');t.dispatchEvent(new Event('input',{bubbles:true}));t.dispatchEvent(new Event('change',{bubbles:true}));return}}
+});
+
+let dirty=false;
+function camUI(){const cs=CAMPUSES(),cnt={};['tickets','tasks','meetings'].forEach(k=>S[k].forEach(x=>camList(x).forEach(c=>cnt[c]=(cnt[c]||0)+1)));
+ return '<h2>Campuses <span class="n">'+cs.length+'</span></h2><div class="empty" style="padding:0 0 8px">Acronym, full name, color, and a badge. Change an acronym and every item using it updates too.</div>'+
+ (cs.map((c,i)=>'<div class="mini" style="flex-wrap:wrap;gap:6px">'+
+   '<span class="pill cam" style="--cc:'+esc(c.c)+';min-width:72px;text-align:center">'+(c.e?c.e+' ':'')+esc(c.k)+'</span>'+
+   '<input style="width:92px" value="'+esc(c.k)+'" data-cpk="'+i+'" title="Acronym">'+
+   '<input style="flex:1;min-width:130px" value="'+esc(c.n)+'" data-cpn="'+i+'" title="Full name">'+
+   '<input type="color" style="width:46px;height:30px;padding:2px" value="'+esc(c.c)+'" data-cpc="'+i+'" title="Campus color">'+
+   '<input style="width:54px;text-align:center" value="'+esc(c.e||'')+'" data-cpe="'+i+'" title="Badge / mascot">'+
+   '<span style="color:var(--mut);font-size:12px;min-width:52px">'+(cnt[c.k]||0)+' item'+((cnt[c.k]||0)===1?'':'s')+'</span>'+
+   '<button class="btn d" data-act="cpdel" data-c="'+esc(c.k)+'" title="Remove">\u2715</button></div>').join('')||'<div class="empty">No campuses yet.</div>')+
+ '<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap"><input id="cpnk" placeholder="Acronym" style="width:110px"><input id="cpnn" placeholder="Full name" style="flex:1;min-width:150px"><button class="btn" data-act="cpadd">Add campus</button></div>';}
+function dataUI(){
+ return '<h2>Your data</h2><div class="sec"><div style="color:var(--mut);font-size:13px;margin-bottom:8px">Everything lives in this browser. Downloading the app saves a complete working copy with your data inside it \u2014 that is your backup.</div>'+
+ '<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn p" data-act="dlapp">\u2b07 Download app (.html)</button><button class="btn" data-act="cpytxt">Copy my data as text</button></div>'+
+ '<label style="margin-top:12px">Restore from text</label><div style="color:var(--mut);font-size:12px;margin-bottom:4px">Paste data you saved earlier, then click Load twice to confirm. This replaces what is in this browser.</div>'+
+ '<textarea id="rstt" style="min-height:90px" placeholder="Paste saved data here\u2026"></textarea>'+
+ '<div style="margin-top:6px;display:flex;gap:8px;align-items:center;flex-wrap:wrap"><button class="btn" data-act="rst">'+(ld?'Click again to replace current data':'Load from text')+'</button><span id="rstm" style="color:var(--mut);font-size:12.5px"></span></div></div>';}
+
+/* ---- Tab leaves a date field instead of crawling mm / dd / yyyy ---- */
+document.addEventListener('keydown',e=>{
+ const t=e.target;
+ if(e.key!=='Tab'||e.altKey||e.ctrlKey||e.metaKey||!t.matches||!t.matches('input[type=date]'))return;
+ const f=[...document.querySelectorAll('input,select,textarea,button,a[href]')].filter(el=>!el.disabled&&el.tabIndex>=0&&(el.offsetWidth||el.offsetHeight));
+ const i=f.indexOf(t);if(i<0)return;
+ const n=f[i+(e.shiftKey?-1:1)];if(!n)return;
+ e.preventDefault();n.focus();
+ if(n.select&&/^(text|search|url|number)$/.test(n.type||''))try{n.select()}catch(x){}
+},true);
+
+/* ---- theme ---- */
+const TK='worktracker.theme',THS=[['auto','\u25d0 Theme: Auto'],['light','\u2600 Theme: Light'],['dark','\u263e Theme: Dark']];
+function setTheme(v){const b=document.getElementById('th');const i=Math.max(0,THS.findIndex(x=>x[0]===v));
+ if(THS[i][0]==='auto')document.documentElement.removeAttribute('data-theme');else document.documentElement.setAttribute('data-theme',THS[i][0]);
+ if(b)b.textContent=THS[i][1];try{localStorage.setItem(TK,THS[i][0])}catch(e){}}
+(function(){let v='auto';try{v=localStorage.getItem(TK)||'auto'}catch(e){}setTheme(v);
+ const b=document.getElementById('th');if(b)b.onclick=()=>{let c='auto';try{c=localStorage.getItem(TK)||'auto'}catch(e){}
+  const i=THS.findIndex(x=>x[0]===c);setTheme(THS[(i+1)%THS.length][0])}})();
+
+
+render();
+</script>
+</body>
+</html>
+
